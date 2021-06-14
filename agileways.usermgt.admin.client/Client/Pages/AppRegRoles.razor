@@ -1,0 +1,67 @@
+@page "/appregroles/{appId}"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using agileways.usermgt.admin.client.Shared.DirectoryObjects
+@attribute [Authorize]
+@inject HttpClient Http
+
+<h1>App Registrations</h1>
+
+
+@if (appRegsRoles == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <p>This page displays app registration roles in the B2C directory for App ID @AppId.</p>
+
+    <p><a href="/addappregroles/@AppId">Add a Role</a></p>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Display Name</th>
+                <th>Value</th>
+                <th>Description</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var role in appRegsRoles)
+            {
+                <tr>
+                    <td>@role.Id</td>
+                    <td>@role.Name</td>
+                    <td>@role.Value</td>
+                    <td>@role.Description</td>
+                    <td>
+                        <a href="editappregroles/@AppId/role/@role.Id">Edit</a> |
+                        <a href="">Delete</a> |
+                        <a href="approleassignments/@AppId/role/@role.Id">Assignments</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    [Parameter]
+    public string AppId { get; set; }
+    private IEnumerable<Role> appRegsRoles;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            appRegsRoles = await Http.GetFromJsonAsync<IEnumerable<Role>>($"app/{AppId}/roles");
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+    }
+
+}

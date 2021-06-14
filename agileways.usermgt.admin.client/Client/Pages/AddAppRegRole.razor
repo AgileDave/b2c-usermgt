@@ -1,0 +1,63 @@
+@page "/addappregroles/{appId}"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using Microsoft.AspNetCore.Components.Forms
+@using agileways.usermgt.admin.client.Shared.DirectoryObjects
+@attribute [Authorize]
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+<h1>Add App Registration Role</h1>
+
+
+<p>This page creates an App Role for App ID @AppId.</p>
+
+
+<EditForm Model="@role" OnValidSubmit="@HandleValidSubmit">
+
+    <p>
+        <label>
+            Identifier:
+            <InputText id="id" @bind-Value="role.Id" />
+        </label>
+    </p>
+    <p>
+        <label>
+            Role Name:
+            <InputText id="name" @bind-Value="role.Name" />
+        </label>
+    </p>
+
+    <p>
+        <label>
+            Role Value:
+            <InputText id="value" @bind-Value="role.Value" />
+        </label>
+    </p>
+
+    <p>
+        <label>
+            Role Description:
+            <InputTextArea id="description" @bind-Value="role.Description" />
+        </label>
+    </p>
+
+    <button type="submit">Add</button>
+</EditForm>
+
+
+@code {
+    [Parameter]
+    public string AppId { get; set; }
+
+    private Role role = new Role { Id = Guid.NewGuid().ToString() };
+
+    private async Task HandleValidSubmit()
+    {
+        //save role to app
+        await Http.PostAsJsonAsync<Role>($"apps/{AppId}/roles", role);
+
+        //redirect to list of roles for app
+        NavigationManager.NavigateTo($"/appregroles/{AppId}");
+    }
+}

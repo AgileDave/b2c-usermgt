@@ -1,0 +1,79 @@
+@page "/editappregroles/{appId}/role/{roleId}"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using Microsoft.AspNetCore.Components.Forms
+@using agileways.usermgt.admin.client.Shared.DirectoryObjects
+@attribute [Authorize]
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+<h1>Edit App Registration Role</h1>
+
+
+<p>This page updates an App Role for App ID @AppId.</p>
+
+
+<EditForm EditContext="@roleContext" OnValidSubmit="@HandleValidSubmit">
+
+    <p>
+        <label>
+            Identifier:
+            <InputText id="id" @bind-Value="role.Id" />
+        </label>
+    </p>
+    <p>
+        <label>
+            Role Name:
+            <InputText id="name" @bind-Value="role.Name" />
+        </label>
+    </p>
+
+    <p>
+        <label>
+            Role Value:
+            <InputText id="value" @bind-Value="role.Value" />
+        </label>
+    </p>
+
+    <p>
+        <label>
+            Role Description:
+            <InputTextArea id="description" @bind-Value="role.Description" />
+        </label>
+    </p>
+
+    <button type="submit">Update</button>
+</EditForm>
+
+
+@code {
+    [Parameter]
+    public string AppId { get; set; }
+    [Parameter]
+    public string RoleId { get; set; }
+
+    private Role role;
+    private EditContext roleContext;
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            role = await Http.GetFromJsonAsync<Role>($"apps/{AppId}/roles/{RoleId}");
+            roleContext = new(role);
+
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        //save role to app
+        await Http.PutAsJsonAsync<Role>($"apps/{AppId}/roles", role);
+
+        //redirect to list of roles for app
+        NavigationManager.NavigateTo($"/appregroles/{AppId}");
+    }
+}

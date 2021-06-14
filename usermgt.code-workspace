@@ -1,0 +1,23 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "agileways.usermgt.admin.client"
+		},
+		{
+			"path": "agileways.usermgt.admin.server"
+		},
+		{
+			"path": "./policies/SocialAndLocalAccounts"
+		},
+		{
+			"path": "clientApps/clientApp1"
+		},
+		{
+			"path": "agileways.usermgt.api"
+		}
+	],
+	"settings": {}
+}

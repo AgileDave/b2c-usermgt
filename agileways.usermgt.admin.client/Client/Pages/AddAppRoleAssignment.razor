@@ -1,0 +1,90 @@
+@page "/addapproleassignment/{appId}"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using agileways.usermgt.admin.client.Shared.DirectoryObjects
+@attribute [Authorize]
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+
+
+<h1>Add App Registration Role</h1>
+
+
+<p>This page creates an App Role for App ID @AppId.</p>
+
+
+@if (users == null || roles == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+
+    <EditForm Model="@arat" OnValidSubmit="@HandleValidSubmit">
+
+        <p>
+            <label>
+                User:
+                <InputSelect @bind-Value="arat.PrincipalId">
+                    @foreach (var user in users)
+                    {
+                        <option value="@user.Id">@user.DisplayName</option>
+                    }
+                </InputSelect>
+            </label>
+        </p>
+        <p>
+            <label>
+                Role Name:
+                <InputSelect @bind-Value="arat.AppRoleId">
+                    @foreach (var role in roles)
+                    {
+                        <option value="@role.Id">@role.Value</option>
+                    }
+                </InputSelect>
+            </label>
+        </p>
+
+        <button type="submit">Add</button>
+    </EditForm>
+}
+
+@code {
+    [Parameter]
+    public string AppId { get; set; }
+
+    private string spnId;
+    private IEnumerable<User> users;
+    private IEnumerable<Role> roles;
+
+    private AppRoleAssignedTo arat = new AppRoleAssignedTo();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var spn = await Http.GetFromJsonAsync<ServicePrincipal>($"/app/{AppId}/spn");
+            spnId = spn.Id;
+            arat.ResourceId = spnId;
+
+            users = await Http.GetFromJsonAsync<IEnumerable<User>>("User");
+
+            roles = await Http.GetFromJsonAsync<IEnumerable<Role>>($"app/{AppId}/roles");
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        //save role to app
+        await Http.PostAsJsonAsync<AppRoleAssignedTo>($"apps/{spnId}/assignrole", arat);
+
+        //redirect to list of roles for app
+        NavigationManager.NavigateTo($"/approleassignments/{AppId}");
+    }
+
+}

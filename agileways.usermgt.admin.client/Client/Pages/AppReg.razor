@@ -1,0 +1,56 @@
+@page "/appreg"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using agileways.usermgt.admin.client.Shared.DirectoryObjects
+@attribute [Authorize(Policy = "NeedRoles")]
+@inject HttpClient Http
+
+<h1>App Registrations</h1>
+
+<p>This page displays app registrations in the B2C directory.</p>
+
+@if (appRegs == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Display Name</th>
+                <th>Roles</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var appReg in appRegs)
+            {
+                <tr>
+                    <td>@appReg.Id</td>
+                    <td>@appReg.DisplayName</td>
+                    <td><a href="appregroles/@appReg.Id">@appReg.RoleCount</a></td>
+                    <td><a href="approleassignments/@appReg.Id">View Assignments</a></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private IEnumerable<AppRegistration> appRegs;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            appRegs = await Http.GetFromJsonAsync<IEnumerable<AppRegistration>>("AppReg");
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+    }
+
+}
