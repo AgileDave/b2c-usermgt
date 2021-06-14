@@ -29,3 +29,17 @@ This repo holds a number of projects. Here's a high level overview of the variou
 
   Sample Blazor WebAssembly Hosted application (including standard Server, Client, and Shared folders) that can be used to test the roles applied to a user. Of note is that the [Client's Program.cs](./clientApps/clientApp1/Client/Program.cs) file includes Authorization Requirements and AuthorizationHandler implementations to show how to check for role claims. Also check out the Client's Razor Page for [UserStuff.razor](./clientApps/clientApp1/Client/Pages/UserStuff.razor) to show an Authorization Policy for multiple role access, and the Razor Page for [AppAdminStuff.razor](./clientApps/clientApp1/Client/Pages/AppAdminStuff.razor) for checking for admin-type roles only.
 
+Each DOTNETCORE project has Dockerfile definitions for containerization.
+
+
+## To-Do's
+
+Here's a list of to-do's that I'd like to add to this app:
+
+  - [ ] Include Groups as assigned to's
+  - [ ] Create a "MyApps" type of page where a user can log in and see what apps they have access ot
+  - [ ] Invitation system to send invite to user for a specific app
+  - [ ] Redeem invitation logic for user redeeming invitation to application
+  - [ ] App Admin views to manage user access for an app
+  - [ ] Company Admin views to manage company user access for an app
+  - [ ] Time-based expiration of assigned roles (suggestion from a colleague)
