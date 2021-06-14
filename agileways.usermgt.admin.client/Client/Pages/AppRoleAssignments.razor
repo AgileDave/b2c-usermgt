@@ -1,0 +1,89 @@
+@page "/approleassignments/{appId}"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using agileways.usermgt.admin.client.Shared.DirectoryObjects
+@attribute [Authorize]
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+<h1>App Role Assignments</h1>
+
+
+@if (appRoleAssignedTos == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <p>This page displays app role assignments for Application ID: @AppId.</p>
+
+    <p><a href="/addapproleassignment/@AppId">Add new App Role Assignment</a></p>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Role ID</th>
+                <th>Principal ID</th>
+                <th>Principal Name</th>
+                <th>Principal Type</th>
+                <th>Resource ID</th>
+                <th>Resource Name</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var arat in appRoleAssignedTos)
+            {
+                <tr>
+                    <td>@arat.Id</td>
+                    <td>@GetRoleValue(arat.AppRoleId)</td>
+                    <td>@arat.PrincipalId</td>
+                    <td>@arat.PrincipalDisplayName</td>
+                    <td>@arat.PrincipalType</td>
+                    <td>@arat.ResourceId</td>
+                    <td>@arat.ResourceDisplayName</td>
+                    <td><a href="javascript:void()" @onclick="@(e => RemoveAssignment(arat.ResourceId, arat.Id))">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+
+
+@code {
+    [Parameter]
+    public string AppId { get; set; }
+
+    private IEnumerable<AppRoleAssignedTo> appRoleAssignedTos;
+    private IDictionary<string, string> rolesDict;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var rolesForAppReg = await Http.GetFromJsonAsync<IEnumerable<Role>>($"/app/{AppId}/roles");
+            rolesDict = rolesForAppReg.ToDictionary(k => k.Id, v => v.Value);
+            rolesDict.Add("00000000-0000-0000-0000-000000000000", "Default");
+            appRoleAssignedTos = await Http.GetFromJsonAsync<IEnumerable<AppRoleAssignedTo>>($"Assignments/{AppId}");
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+    }
+
+    protected string GetRoleValue(string roleId)
+    {
+        return rolesDict[roleId];
+    }
+
+    private async Task RemoveAssignment(string resourceId, string principalId)
+    {
+        await Http.DeleteAsync($"/apps/{resourceId}/assignment/{principalId}");
+        //redirect to list of roles for app
+        NavigationManager.NavigateTo($"/approleassignments/{AppId}");
+    }
+}

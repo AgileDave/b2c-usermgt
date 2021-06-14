@@ -1,0 +1,18 @@
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+
+
+
+
+@code {
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+    }
+}

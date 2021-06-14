@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="{Settings:Tenant}" PolicyId="B2C_1A_UserMgt_BuildingBlocks" PublicPolicyUri="http://{Settings:Tenant}/B2C_1A_UserMgt_BuildingBlocks">
+
+  <BasePolicy>
+    <TenantId>{Settings:Tenant}</TenantId>
+    <PolicyId>B2C_1A_TrustFrameworkExtensions</PolicyId>
+  </BasePolicy>
+
+  <BuildingBlocks>
+    <ClaimsSchema>
+      <!--Demo: Custom claims use in the solution -->
+      <ClaimType Id="invitationCode">
+        <DisplayName>Invitation Code</DisplayName>
+        <DataType>string</DataType>
+        <UserHelpText>The invitation code provided to the user for sign-up</UserHelpText>
+      </ClaimType>
+      <ClaimType Id="roles">
+        <DisplayName>User Roles</DisplayName>
+        <DataType>stringCollection</DataType>
+        <UserHelpText>The roles a user has for this application</UserHelpText>
+      </ClaimType>
+      <ClaimType Id="clientId">
+        <DisplayName>Client ID</DisplayName>
+        <DataType>string</DataType>
+        <UserHelpText>The id of the current application</UserHelpText>
+      </ClaimType>
+      <ClaimType Id="extension_companyId">
+        <DisplayName>Company Affiliation</DisplayName>
+        <DataType>string</DataType>
+        <UserHelpText>The company name that you belong to</UserHelpText>
+        <UserInputType>TextBox</UserInputType>
+      </ClaimType>
+    </ClaimsSchema>
+  </BuildingBlocks>
+</TrustFrameworkPolicy>

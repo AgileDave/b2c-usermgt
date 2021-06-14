@@ -1,0 +1,64 @@
+@page "/user/{userId}/assignments"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using agileways.usermgt.admin.client.Shared.DirectoryObjects
+@attribute [Authorize]
+@inject HttpClient Http
+
+<h1>App Role Assignments for User ID: @UserId</h1>
+
+<p>This page displays a user's app role assignments in the B2C directory.</p>
+
+@if (arats == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Role ID</th>
+                <th>Principal ID</th>
+                <th>Principal Name</th>
+                <th>Principal Type</th>
+                <th>Resource ID</th>
+                <th>Resource Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var arat in arats)
+            {
+                <tr>
+                    <td>@arat.Id</td>
+                    <td>@arat.AppRoleId</td>
+                    <td>@arat.PrincipalId</td>
+                    <td>@arat.PrincipalDisplayName</td>
+                    <td>@arat.PrincipalType</td>
+                    <td>@arat.ResourceId</td>
+                    <td>@arat.ResourceDisplayName</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    [Parameter]
+    public string UserId { get; set; }
+    private IEnumerable<AppRoleAssignedTo> arats;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            arats = await Http.GetFromJsonAsync<IEnumerable<AppRoleAssignedTo>>($"user/{UserId}/assignments");
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+    }
+
+}

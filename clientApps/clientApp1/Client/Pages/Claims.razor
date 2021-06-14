@@ -1,0 +1,59 @@
+@page "/claims"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using System.Security.Claims
+@using clientApp1.Shared
+@attribute [Authorize]
+@inject HttpClient Http
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<h1>Your Claims</h1>
+
+<p>This page checks if you are logged in and then displays your claims. This is not role specific.</p>
+
+
+@if (_claims == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+
+    <h2>Claims</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var c in _claims)
+            {
+                <tr>
+                    <td>@c.Type</td>
+                    <td>@c.Value</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private IEnumerable<Claim> _claims;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            _claims = user.Claims;
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+    }
+
+}

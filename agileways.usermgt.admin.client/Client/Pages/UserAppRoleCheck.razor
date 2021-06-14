@@ -1,0 +1,93 @@
+@page "/userrolecheck"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using agileways.usermgt.admin.client.Shared.DirectoryObjects
+@attribute [Authorize(Policy = "NeedRoles")]
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+
+
+<h1>User Role Check</h1>
+
+<p>This page retrieves the Role or Roles a user has for an app</p>
+
+@if (users == null || apps == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <p>
+        <label>
+            User:
+            <select @bind="UserId">
+                @foreach (var user in users)
+                {
+                    <option value="@user.Id">@user.DisplayName</option>
+                }
+            </select>
+        </label>
+    </p>
+    <p>
+        <label>
+            App Name:
+            <select @bind="AppId">
+                @foreach (var app in apps)
+                {
+                    <option value="@app.Id">@app.DisplayName</option>
+                }
+            </select>
+        </label>
+    </p>
+
+    <button @onclick="CheckRoles">Get Roles</button>
+
+    @if (roles == null)
+    {
+        <ul></ul>
+    }
+    else
+    {
+        <br />
+        <h2>User Roles</h2>
+        <br />
+        <ul>
+            @foreach (var role in roles)
+            {
+                <li>@role.Value</li>
+            }
+        </ul>
+
+    }
+
+}
+
+@code {
+
+    private IEnumerable<User> users;
+    private IEnumerable<AppRegistration> apps;
+    private IEnumerable<Role> roles = null;
+
+    public string UserId { get; set; }
+    public string AppId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            users = await Http.GetFromJsonAsync<IEnumerable<User>>("User");
+            apps = await Http.GetFromJsonAsync<IEnumerable<AppRegistration>>("AppReg");
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+
+    }
+
+    protected async Task CheckRoles()
+    {
+        roles = await Http.GetFromJsonAsync<IEnumerable<Role>>($"/roleclaim/user/{UserId}/app/{AppId}");
+    }
+}

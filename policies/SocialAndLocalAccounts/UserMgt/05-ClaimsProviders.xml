@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="{Settings:Tenant}" PolicyId="B2C_1A_UserMgt_ClaimsProviders" PublicPolicyUri="http://{Settings:Tenant}/B2C_1A_UserMgt_ClaimsProviders">
+
+    <BasePolicy>
+        <TenantId>{Settings:Tenant}</TenantId>
+        <PolicyId>B2C_1A_UserMgt_BuildingBlocks</PolicyId>
+    </BasePolicy>
+
+    <ClaimsProviders>
+        <ClaimsProvider>
+            <DisplayName>Local Account</DisplayName>
+            <TechnicalProfiles>
+
+                <TechnicalProfile Id="AAD-UserWriteUsingLogonEmail">
+                    <PersistedClaims>
+                        <!-- Optional claims. -->
+                        <PersistedClaim ClaimTypeReferenceId="extension_companyId" />
+                    </PersistedClaims>
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="LocalAccountSignUpWithEmailAndInvitation">
+                    <DisplayName>Email signup</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="IpAddressClaimReferenceId">IpAddress</Item>
+                        <Item Key="ContentDefinitionReferenceId">api.localaccountsignup</Item>
+                        <Item Key="language.button_continue">Create</Item>
+                        <Item Key="EnforceEmailVerification">False</Item>
+                    </Metadata>
+                    <CryptographicKeys>
+                        <Key Id="issuer_secret" StorageReferenceId="B2C_1A_TokenSigningKeyContainer" />
+                    </CryptographicKeys>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="email" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="objectId" />
+                        <OutputClaim ClaimTypeReferenceId="email" PartnerClaimType="Verified.Email" Required="true" />
+                        <OutputClaim ClaimTypeReferenceId="newPassword" Required="true" />
+                        <OutputClaim ClaimTypeReferenceId="reenterPassword" Required="true" />
+                        <OutputClaim ClaimTypeReferenceId="executed-SelfAsserted-Input" DefaultValue="true" />
+                        <OutputClaim ClaimTypeReferenceId="authenticationSource" />
+                        <OutputClaim ClaimTypeReferenceId="newUser" />
+
+                        <!-- Optional claims, to be collected from the user -->
+                        <OutputClaim ClaimTypeReferenceId="displayName" />
+                        <OutputClaim ClaimTypeReferenceId="givenName" />
+                        <OutputClaim ClaimTypeReferenceId="surName" />
+                        <OutputClaim ClaimTypeReferenceId="extension_companyId" />
+                    </OutputClaims>
+                    <ValidationTechnicalProfiles>
+                        <!-- <ValidationTechnicalProfile ReferenceId="REST-VerifyInvitation" /> -->
+                        <ValidationTechnicalProfile ReferenceId="AAD-UserWriteUsingLogonEmail" />
+                    </ValidationTechnicalProfiles>
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-AAD" />
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="AAD-UserReadUsingObjectId">
+                    <OutputClaims>
+                        <!-- Optional claims -->
+                        <OutputClaim ClaimTypeReferenceId="extension_companyId" />
+                    </OutputClaims>
+                </TechnicalProfile>
+
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+        <ClaimsProvider>
+            <DisplayName>REST APIs</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="REST-VerifyInvitation">
+                    <DisplayName>Validate user invitation code and returns </DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="ServiceUrl">http://your-app.azurewebsites.net/api/identity/validate</Item>
+                        <Item Key="AuthenticationType">None</Item>
+                        <Item Key="SendClaimsIn">Body</Item>
+                        <Item Key="AllowInsecureAuthInProduction">true</Item>
+                    </Metadata>
+                    <InputClaims>
+                        <!--Demo: optional claims to be sent to the REST API-->
+                        <InputClaim ClaimTypeReferenceId="objectId" PartnerClaimType="userId" />
+                        <InputClaim ClaimTypeReferenceId="clientId" PartnerClaimType="appId" DefaultValue="{OIDC:ClientId}" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="roles" PartnerClaimType="roles" />
+                    </OutputClaims>
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="REST-GetUserRoles">
+                    <DisplayName>Get User Roles</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="ServiceUrl">https://gy-usermgt-api.azurewebsites.net/roleclaim</Item>
+                        <Item Key="AuthenticationType">None</Item>
+                        <Item Key="SendClaimsIn">Body</Item>
+                        <Item Key="IncludeClaimResolvingInClaimsHandling">true</Item>
+                    </Metadata>
+                    <InputClaims>
+                        <!--Demo: optional claims to be sent to the REST API-->
+                        <InputClaim ClaimTypeReferenceId="objectId" />
+                        <InputClaim ClaimTypeReferenceId="clientId" DefaultValue="{OIDC:ClientId}" AlwaysUseDefaultValue="true" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="roles" PartnerClaimType="roles" />
+                    </OutputClaims>
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+                </TechnicalProfile>
+
+            </TechnicalProfiles>
+        </ClaimsProvider>
+    </ClaimsProviders>
+</TrustFrameworkPolicy>

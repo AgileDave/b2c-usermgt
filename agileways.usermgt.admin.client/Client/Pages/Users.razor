@@ -1,0 +1,64 @@
+@page "/user"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using agileways.usermgt.admin.client.Shared.DirectoryObjects
+@attribute [Authorize(Policy = "NeedRoles")]
+@inject HttpClient Http
+
+<h1>Users</h1>
+
+<p>This page displays users in the B2C directory.</p>
+
+@if (users == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Display Name</th>
+                <th>Identities</th>
+                <th>UPN</th>
+                <th>App Role Assignments</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in users)
+            {
+                <tr>
+                    <td>@user.Id</td>
+                    <td>@user.DisplayName</td>
+                    <td>
+                        @foreach (var id in user.Identities)
+                        {
+                            <span>@id.IssuerAssignedId ( @id.SignInType )</span>
+                            <br />
+                        }
+                    </td>
+                    <td>@user.UserPrincipalName</td>
+                    <td><a href="/user/@user.Id/assignments">View Assignments</a></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private IEnumerable<User> users;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            users = await Http.GetFromJsonAsync<IEnumerable<User>>("User");
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+    }
+
+}

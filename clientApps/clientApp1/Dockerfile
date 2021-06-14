@@ -1,0 +1,36 @@
+FROM mcr.microsoft.com/dotnet/aspnet:5.0-alpine AS base
+WORKDIR /app
+EXPOSE 5000
+EXPOSE 5001
+
+ENV ASPNETCORE_URLS=http://+:5000
+
+# Creates a non-root user with an explicit UID and adds permission to access the /app folder
+# For more info, please refer to https://aka.ms/vscode-docker-dotnet-configure-containers
+RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /app
+USER appuser
+
+FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
+WORKDIR /src
+
+COPY ["Server/clientApp1.Server.csproj", "Server/"]
+COPY ["Shared/clientApp1.Shared.csproj", "Shared/"]
+COPY ["Client/clientApp1.Client.csproj", "Client/"]
+
+RUN dotnet restore "Server/clientApp1.Server.csproj"
+RUN dotnet restore "Shared/clientApp1.Shared.csproj"
+RUN dotnet restore "Client/clientApp1.Client.csproj"
+
+COPY . .
+
+WORKDIR "/src/Server"
+
+RUN dotnet build "clientApp1.Server.csproj" -c Release -o /app/build
+
+FROM build AS publish
+RUN dotnet publish "clientApp1.Server.csproj" -c Release -o /app/publish
+
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+ENTRYPOINT ["dotnet", "clientApp1.Server.dll"]
