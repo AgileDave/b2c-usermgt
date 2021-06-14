@@ -7,9 +7,6 @@
 			"path": "agileways.usermgt.admin.client"
 		},
 		{
-			"path": "agileways.usermgt.admin.server"
-		},
-		{
 			"path": "./policies/SocialAndLocalAccounts"
 		},
 		{
