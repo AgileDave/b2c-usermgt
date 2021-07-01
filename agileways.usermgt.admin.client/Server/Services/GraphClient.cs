@@ -319,7 +319,7 @@ namespace agileways.usermgt.admin.client.Server.Services
             return true;
         }
 
-        public async Task<IEnumerable<AppRoleAssignedTo>> GetAppRoleAssignmentsForUserId(string userId)
+        public async Task<IEnumerable<AppRoleAssignedTo>> GetAppRoleAssignmentsForUserIdAsync(string userId)
         {
 
             var arats = await _graphClient.Users[userId]

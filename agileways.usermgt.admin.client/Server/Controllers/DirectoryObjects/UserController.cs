@@ -31,7 +31,7 @@ namespace agileways.usermgt.admin.client.Server.Controllers
         [HttpGet("{userId}/assignments")]
         public async Task<IEnumerable<AppRoleAssignedTo>> GetAppRoleAssignmentsForUser(string userId)
         {
-            return await _graph.GetAppRoleAssignmentsForUserId(userId);
+            return await _graph.GetAppRoleAssignmentsForUserIdAsync(userId);
         }
     }
 }
