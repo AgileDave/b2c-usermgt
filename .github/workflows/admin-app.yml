@@ -50,7 +50,7 @@ jobs:
           pull: false
           # Push is a shorthand for --output=type=registry
           push: true
-          context: ./agileways.usermgt.admin.client
-          file: ./agileways.usermgt.admin.client/Dockerfile-Server
+          context: 'agileways.usermgt.admin.client/.'
+          file: 'agileways.usermgt.admin.client/Dockerfile-Server'
           # List of tags
-          tags: ${{secrets.REGISTRY_NAME}}/${{secrets.REPOSITORY_NAME}}:${{github.run_id}}
+          tags: ${{secrets.REGISTRY_NAME}}/${{secrets.ADMIN_REPOSITORY_NAME}}:${{github.run_id}}
