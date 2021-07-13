@@ -1,0 +1,1 @@
+[![api-container-build](https://github.com/AgileDave/b2c-usermgt/actions/workflows/api-app.yml/badge.svg)](https://github.com/AgileDave/b2c-usermgt/actions/workflows/api-app.yml)

@@ -1,4 +1,4 @@
-
+[![admin-container-build](https://github.com/AgileDave/b2c-usermgt/actions/workflows/admin-app.yml/badge.svg)](https://github.com/AgileDave/b2c-usermgt/actions/workflows/admin-app.yml)
 
 ## App Settings File
 
