@@ -33,13 +33,15 @@ namespace agileways.usermgt.admin.client.Client
                 //options.UserOptions.RoleClaim = "roles";
             });
 
-            // builder.Services.AddAuthorizationCore(opt => opt.AddPolicy("NeedRoles",
+            // builder.Services.AddAuthorizationCore(opt => opt.AddPolicy("GlobalAdmin",
             //                                                 pol => pol.RequireClaim("roles", "Global.RoleAdmin")));
 
             builder.Services.AddAuthorizationCore(opt =>
             {
-                opt.AddPolicy("NeedRoles", pol =>
+                opt.AddPolicy("GlobalAdmin", pol =>
                     pol.Requirements.Add(new RoleRequirement("Global.RoleAdmin")));
+                opt.AddPolicy("CompanyUserAdmin", pol =>
+                    pol.Requirements.Add(new RoleRequirement("Global.RoleAdmin, Company.UserAdmin")));
             });
 
             builder.Services.AddSingleton<IAuthorizationHandler, RoleHandler>();
@@ -50,10 +52,10 @@ namespace agileways.usermgt.admin.client.Client
 
     public class RoleRequirement : IAuthorizationRequirement
     {
-        public string RoleName { get; }
-        public RoleRequirement(string roleName)
+        public string[] RoleNames { get; }
+        public RoleRequirement(params string[] roleNames)
         {
-            RoleName = roleName;
+            RoleNames = roleNames;
         }
     }
 
@@ -67,9 +69,13 @@ namespace agileways.usermgt.admin.client.Client
             }
 
             var roles = context.User.FindFirst(c => c.Type == "roles").Value;
-            if (roles.Contains(requirement.RoleName))
+            foreach (var roleName in requirement.RoleNames)
             {
-                context.Succeed(requirement);
+                if (roles.Contains(roleName))
+                {
+                    context.Succeed(requirement);
+                    break;
+                }
             }
             return Task.CompletedTask;
         }

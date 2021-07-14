@@ -335,8 +335,25 @@ namespace agileways.usermgt.admin.client.Server.Services
                 PrincipalId = a.PrincipalId?.ToString(),
                 PrincipalType = a.PrincipalType,
                 ResourceDisplayName = a.ResourceDisplayName,
-                ResourceId = a.ResourceId?.ToString()
+                ResourceId = a.ResourceId?.ToString(),
+                AppRoleName = this.GetRoleForSpnIdAndRoleIdAsync(a.ResourceId?.ToString(), a.AppRoleId?.ToString()).Result.Name
             });
+        }
+
+        public async Task<Role> GetRoleForSpnIdAndRoleIdAsync(string spnId, string roleId)
+        {
+
+            var spn = await _graphClient.ServicePrincipals[spnId]
+                                .Request()
+                                .GetAsync();
+
+            var apps = await _graphClient.Applications
+                                .Request()
+                                .Filter($"appId eq '{spn.AppId}'")
+                                .GetAsync();
+            var app = apps.First();
+
+            return await this.GetAppRoleForAppRegistration(app.Id, roleId);
         }
 
         public async Task<IEnumerable<Role>> GetUserAssignedRolesForApplication(string appId, string userId)
