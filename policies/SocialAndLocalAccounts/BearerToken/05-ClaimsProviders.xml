@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="{Settings:Tenant}" PolicyId="B2C_1A_BearerToken_ClaimsProviders" PublicPolicyUri="http://{Settings:Tenant}/B2C_1A_BearerToken_ClaimsProviders">
+
+    <BasePolicy>
+        <TenantId>{Settings:Tenant}</TenantId>
+        <PolicyId>B2C_1A_BearerToken_BuildingBlocks</PolicyId>
+    </BasePolicy>
+
+    <ClaimsProviders>
+        <ClaimsProvider>
+            <Domain>rest-api</Domain>
+            <DisplayName>REST API Profiles</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="REST-AcquireAccessToken">
+                    <DisplayName></DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="ServiceUrl">https://login.microsoftonline.com/{Settings:RESTApiTenantName}.onmicrosoft.com/oauth2/v2.0/token</Item>
+                        <Item Key="AuthenticationType">Basic</Item>
+                        <Item Key="SendClaimsIn">Form</Item>
+                    </Metadata>
+                    <CryptographicKeys>
+                        <Key Id="BasicAuthenticationUsername" StorageReferenceId="{Settings:RESTApiPolicyKeyClientId}" />
+                        <Key Id="BasicAuthenticationPassword" StorageReferenceId="{Settings:RESTApiPolicyKeyClientSecret}" />
+                    </CryptographicKeys>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="grant_type" DefaultValue="client_credentials" />
+                        <InputClaim ClaimTypeReferenceId="scope" DefaultValue="https://graph.microsoft.com/.default" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="bearerToken" PartnerClaimType="access_token" />
+                    </OutputClaims>
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+        <ClaimsProvider>
+            <Domain>common-aad</Domain>
+            <DisplayName>Common AAD</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="AADCommon-OpenIdConnect-2">
+                    <DisplayName>Microsoft AAD Login</DisplayName>
+                    <Description>Login with your Contoso account</Description>
+                    <Protocol Name="OpenIdConnect"/>
+                    <Metadata>
+                        <Item Key="METADATA">https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration</Item>
+                        <!-- Update the Client ID below to the Application ID -->
+                        <Item Key="client_id">9bb42244-a0ca-499f-afe0-1428718c9594</Item>
+                        <Item Key="response_types">code</Item>
+                        <Item Key="scope">openid profile</Item>
+                        <Item Key="response_mode">form_post</Item>
+                        <Item Key="HttpBinding">POST</Item>
+                        <Item Key="UsePolicyInRedirectUri">false</Item>
+                        <Item Key="DiscoverMetadataByTokenIssuer">true</Item>
+                        <!-- The key below allows you to specify each of the Azure AD tenants that can be used to sign in. Update the GUIDs below for each tenant. -->
+                        <!-- <Item Key="ValidTokenIssuerPrefixes">https://login.microsoftonline.com/00000000-0000-0000-0000-000000000000,https://login.microsoftonline.com/11111111-1111-1111-1111-111111111111</Item> -->
+                        <!-- The commented key below specifies that users from any tenant can sign-in. Uncomment if you would like anyone with an Azure AD account to be able to sign in. -->
+                        <Item Key="ValidTokenIssuerPrefixes">https://login.microsoftonline.com/</Item>
+                    </Metadata>
+                    <CryptographicKeys>
+                        <Key Id="client_secret" StorageReferenceId="B2C_1A_AADAppSecret"/>
+                    </CryptographicKeys>
+                    <InputClaimsTransformations>
+                        <InputClaimsTransformation ReferenceId="CreateLoginHintClaim" />
+                    </InputClaimsTransformations>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="login_hint" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="issuerUserId" PartnerClaimType="oid"/>
+                        <OutputClaim ClaimTypeReferenceId="tenantId" PartnerClaimType="tid"/>
+                        <OutputClaim ClaimTypeReferenceId="givenName" PartnerClaimType="given_name" />
+                        <OutputClaim ClaimTypeReferenceId="surName" PartnerClaimType="family_name" />
+                        <OutputClaim ClaimTypeReferenceId="displayName" PartnerClaimType="name" />
+                        <OutputClaim ClaimTypeReferenceId="authenticationSource" DefaultValue="socialIdpAuthentication" AlwaysUseDefaultValue="true" />
+                        <OutputClaim ClaimTypeReferenceId="identityProvider" PartnerClaimType="iss" />
+                        <OutputClaim ClaimTypeReferenceId="groups" PartnerClaimType="groups" />
+                        <OutputClaim ClaimTypeReferenceId="role" PartnerClaimType="extn.role" />
+                    </OutputClaims>
+                    <OutputClaimsTransformations>
+                        <OutputClaimsTransformation ReferenceId="CreateRandomUPNUserName"/>
+                        <OutputClaimsTransformation ReferenceId="CreateUserPrincipalName"/>
+                        <OutputClaimsTransformation ReferenceId="CreateAlternativeSecurityId"/>
+                        <OutputClaimsTransformation ReferenceId="CreateSubjectClaimFromAlternativeSecurityId"/>
+                    </OutputClaimsTransformations>
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-SocialLogin"/>
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+    </ClaimsProviders>
+
+</TrustFrameworkPolicy>
