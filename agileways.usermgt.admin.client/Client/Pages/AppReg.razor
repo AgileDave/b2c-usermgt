@@ -2,7 +2,7 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 @using agileways.usermgt.admin.client.Shared.DirectoryObjects
-@attribute [Authorize(Policy = "NeedRoles")]
+@attribute [Authorize(Policy = "GlobalAdmin")]
 @inject HttpClient Http
 
 <h1>App Registrations</h1>

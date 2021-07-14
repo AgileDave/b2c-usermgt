@@ -20,5 +20,6 @@ namespace agileways.usermgt.admin.client.Server.Services
         Task<IEnumerable<AppRoleAssignedTo>> GetAppRoleAssignmentsForUserIdAsync(string userId);
         Task<IEnumerable<Role>> GetUserAssignedRolesForApplication(string appId, string userId);
         Task<AppRegistration> GetAppRegistrationByClientId(string clientId);
+        Task<Role> GetRoleForSpnIdAndRoleIdAsync(string spnId, string roleId);
     }
 }

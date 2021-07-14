@@ -1,13 +1,14 @@
-@page "/user/{userId}/assignments"
+@page "/myapps"
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 @using agileways.usermgt.admin.client.Shared.DirectoryObjects
 @attribute [Authorize]
 @inject HttpClient Http
+@inject AuthenticationStateProvider AuthState
 
-<h1>App Role Assignments for User ID: @UserId</h1>
+<h1>My Apps</h1>
 
-<p>This page displays a user's app role assignments in the B2C directory.</p>
+<p>This page displays the Applications I have access to along with my role for each.</p>
 
 @if (arats == null)
 {
@@ -15,6 +16,7 @@
 }
 else
 {
+
     <table class="table">
         <thead>
             <tr>
@@ -47,15 +49,17 @@ else
 }
 
 @code {
-    [Parameter]
-    public string UserId { get; set; }
     private IEnumerable<AppRoleAssignedTo> arats;
+    private IDictionary<string, string> rolesDict;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            arats = await Http.GetFromJsonAsync<IEnumerable<AppRoleAssignedTo>>($"user/{UserId}/assignments");
+            var user = (await AuthState.GetAuthenticationStateAsync()).User;
+            var userId = user.Claims.First(c => c.Type == "sub")?.Value;
+
+            arats = await Http.GetFromJsonAsync<IEnumerable<AppRoleAssignedTo>>($"user/{userId}/assignments");
         }
         catch (AccessTokenNotAvailableException exception)
         {
