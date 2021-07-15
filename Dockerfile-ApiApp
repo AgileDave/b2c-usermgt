@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/aspnet:5.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:5.0-alpine AS base
 WORKDIR /app
 EXPOSE 5000
 
@@ -11,10 +11,18 @@ USER appuser
 
 FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
 WORKDIR /src
-COPY ["agileways.usermgt.api.csproj", "./"]
-RUN dotnet restore "agileways.usermgt.api.csproj"
+
+COPY ["agileways.usermgt.shared/agileways.usermgt.shared.csproj", "agileways.usermgt.shared/"]
+COPY ["agileways.usermgt.shared.server/agileways.usermgt.shared.server.csproj", "agileways.usermgt.shared.server/"]
+COPY ["agileways.usermgt.api/agileways.usermgt.api.csproj", "agileways.usermgt.api/"]
+
+RUN dotnet restore "agileways.usermgt.shared.server/agileways.usermgt.shared.server.csproj"
+RUN dotnet restore "agileways.usermgt.shared/agileways.usermgt.shared.csproj"
+RUN dotnet restore "agileways.usermgt.api/agileways.usermgt.api.csproj"
+
 COPY . .
-WORKDIR "/src/."
+WORKDIR "/src/agileways.usermgt.api"
+
 RUN dotnet build "agileways.usermgt.api.csproj" -c Release -o /app/build
 
 FROM build AS publish

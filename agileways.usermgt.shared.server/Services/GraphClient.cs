@@ -8,7 +8,7 @@ using Microsoft.Graph;
 using Microsoft.Graph.Auth;
 using Microsoft.Identity.Client;
 
-namespace agileways.usermgt.shared.Services
+namespace agileways.usermgt.shared.server.Services
 {
     public class GraphClient : IGraphClient
     {
@@ -380,5 +380,63 @@ namespace agileways.usermgt.shared.Services
                 Value = appRoleDict[ur.AppRoleId?.ToString()]
             });
         }
+
+
+        public async Task<IEnumerable<Role>> GetUserAssignedRolesForApplicationByClientIdAsync(string clientId, string userId)
+        {
+
+            var app = await this.GetAppRegistrationByClientId(clientId);
+            var spn = await this.GetServicePrincipalFromApplicationName(app.DisplayName);
+            var appRoles = await this.GetAppRolesForAppRegistration(app.Id);
+            var appRoleDict = appRoles.ToDictionary(
+                k => k.Id,
+                v => v.Value
+            );
+            var userRoles = await _graphClient.Users[userId]
+                        .AppRoleAssignments
+                        .Request()
+                        .Filter($"resourceId eq {spn.Id}")
+                        .GetAsync();
+
+            return userRoles.Select(ur => new Role
+            {
+                Description = string.Empty,
+                Id = ur.AppRoleId?.ToString(),
+                Name = string.Empty,
+                Value = appRoleDict[ur.AppRoleId?.ToString()]
+            });
+        }
+
+        public async Task<IEnumerable<Models.DirectoryObjects.User>> GetUsersForCompanyAsync(string companyId = "")
+        {
+            var extId = "fe49ff62ac584ec39706452de6fb7fe7";
+
+            var queryString = $"id,displayName,givenName,surname,identities,userPrincipalName,extension_{extId}_companyId";
+
+            var users = await _graphClient.Users
+                                    .Request()
+                                    .Select(queryString)
+                                    .Filter($"extension_{extId}_companyId eq '{companyId}'")
+                                    .GetAsync();
+
+            return users.Select(u => new Models.DirectoryObjects.User
+            {
+                Id = u.Id,
+                DisplayName = u.DisplayName,
+                GivenName = u.GivenName,
+                Surname = u.Surname,
+                Identities = u.Identities.Select(i => new Models.DirectoryObjects.UserIdentity
+                {
+                    SignInType = i.SignInType,
+                    Issuer = i.Issuer,
+                    IssuerAssignedId = i.IssuerAssignedId
+                }),
+                UserPrincipalName = u.UserPrincipalName,
+                CompanyId = (string)u.AdditionalData[$"extension_{extId}_companyId"]
+            });
+
+        }
+
+
     }
 }

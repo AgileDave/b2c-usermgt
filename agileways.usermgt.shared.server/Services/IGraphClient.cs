@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using agileways.usermgt.api.Shared.DirectoryObjects;
+using agileways.usermgt.shared.Models.DirectoryObjects;
 
-namespace agileways.usermgt.api.Services
+namespace agileways.usermgt.shared.server.Services
 {
     public interface IGraphClient
     {
@@ -17,10 +17,11 @@ namespace agileways.usermgt.api.Services
         Task<IEnumerable<AppRoleAssignedTo>> GetAppRoleAssignedTosAsync(string spnId);
         Task<AppRoleAssignedTo> AddAppRoleAssignmentToSpn(string spnId, AppRoleAssignedTo arat);
         Task<bool> DeleteAppRoleAssignmentFromSpn(string spnId, string principalId);
-        Task<IEnumerable<AppRoleAssignedTo>> GetAppRoleAssignmentsForUserId(string userId);
+        Task<IEnumerable<AppRoleAssignedTo>> GetAppRoleAssignmentsForUserIdAsync(string userId);
         Task<IEnumerable<Role>> GetUserAssignedRolesForApplication(string appId, string userId);
         Task<AppRegistration> GetAppRegistrationByClientId(string clientId);
-        Task<IEnumerable<Role>> GetUserAssignedRolesForApplicationByClientId(string appId, string userId);
+        Task<Role> GetRoleForSpnIdAndRoleIdAsync(string spnId, string roleId);
+        Task<IEnumerable<Role>> GetUserAssignedRolesForApplicationByClientIdAsync(string appId, string userId);
         Task<IEnumerable<User>> GetUsersForCompanyAsync(string companyId = "");
     }
 }

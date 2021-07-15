@@ -15,10 +15,12 @@ WORKDIR /src
 
 COPY ["agileways.usermgt.admin.client/Server/agileways.usermgt.admin.client.Server.csproj", "agileways.usermgt.admin.client/Server/"]
 COPY ["agileways.usermgt.shared/agileways.usermgt.shared.csproj", "agileways.usermgt.shared/"]
+COPY ["agileways.usermgt.shared.server/agileways.usermgt.shared.server.csproj", "agileways.usermgt.shared.server/"]
 COPY ["agileways.usermgt.admin.client/Client/agileways.usermgt.admin.client.Client.csproj", "agileways.usermgt.admin.client/Client/"]
 
 RUN dotnet restore "agileways.usermgt.admin.client/Server/agileways.usermgt.admin.client.Server.csproj"
-RUN dotnet restore "agileways.usermgt.shared/agileways.usermgt.admin.client.Shared.csproj"
+RUN dotnet restore "agileways.usermgt.shared.server/agileways.usermgt.shared.server.csproj"
+RUN dotnet restore "agileways.usermgt.shared/agileways.usermgt.shared.csproj"
 RUN dotnet restore "agileways.usermgt.admin.client/Client/agileways.usermgt.admin.client.Client.csproj"
 
 COPY . .

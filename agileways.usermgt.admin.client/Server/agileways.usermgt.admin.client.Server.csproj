@@ -15,6 +15,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Client\agileways.usermgt.admin.client.Client.csproj" />
     <ProjectReference Include="..\..\agileways.usermgt.shared\agileways.usermgt.shared.csproj" />
+    <ProjectReference Include="..\..\agileways.usermgt.shared.server\agileways.usermgt.shared.server.csproj" />
   </ItemGroup>
 
   <ItemGroup>

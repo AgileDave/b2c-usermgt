@@ -17,6 +17,9 @@
 		},
 		{
 			"path": "agileways.usermgt.shared"
+		},
+		{
+			"path": "agileways.usermgt.shared.server"
 		}
 	],
 	"settings": {}

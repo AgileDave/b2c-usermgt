@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using agileways.usermgt.shared.Services;
+using agileways.usermgt.shared.server.Services;
 using agileways.usermgt.shared.Models.DirectoryObjects;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
