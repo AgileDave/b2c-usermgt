@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using agileways.usermgt.admin.client.Shared.DirectoryObjects;
+using agileways.usermgt.shared.Models.DirectoryObjects;
 
-namespace agileways.usermgt.admin.client.Server.Services
+namespace agileways.usermgt.shared.server.Services
 {
     public interface IGraphClient
     {
@@ -21,5 +21,7 @@ namespace agileways.usermgt.admin.client.Server.Services
         Task<IEnumerable<Role>> GetUserAssignedRolesForApplication(string appId, string userId);
         Task<AppRegistration> GetAppRegistrationByClientId(string clientId);
         Task<Role> GetRoleForSpnIdAndRoleIdAsync(string spnId, string roleId);
+        Task<IEnumerable<Role>> GetUserAssignedRolesForApplicationByClientIdAsync(string appId, string userId);
+        Task<IEnumerable<User>> GetUsersForCompanyAsync(string companyId = "");
     }
 }

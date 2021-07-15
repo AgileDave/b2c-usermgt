@@ -1,5 +1,5 @@
 
-namespace agileways.usermgt.admin.client.Shared.DirectoryObjects
+namespace agileways.usermgt.shared.Models.DirectoryObjects
 {
     public class Role
     {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace agileways.usermgt.admin.client.Shared
+namespace agileways.usermgt.shared.Models
 {
     public class WeatherForecast
     {

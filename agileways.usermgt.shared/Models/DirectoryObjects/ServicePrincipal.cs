@@ -2,7 +2,7 @@
 
 using System.Collections.Generic;
 
-namespace agileways.usermgt.api.Shared.DirectoryObjects
+namespace agileways.usermgt.shared.Models.DirectoryObjects
 {
     public class ServicePrincipal
     {

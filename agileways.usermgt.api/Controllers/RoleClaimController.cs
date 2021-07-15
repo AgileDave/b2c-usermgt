@@ -4,10 +4,9 @@ using System.Net;
 using System.Text;
 using System.Linq;
 using System.Threading.Tasks;
-using agileways.usermgt.api.Services;
-using agileways.usermgt.api.Shared.DirectoryObjects;
+using agileways.usermgt.shared.server.Services;
+using agileways.usermgt.shared.Models.DirectoryObjects;
 using agileways.usermgt.api.Shared.RestModel;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
@@ -84,7 +83,7 @@ namespace agileways.usermgt.api.Controllers
 
             try
             {
-                var userRoleObjs = await _graph.GetUserAssignedRolesForApplicationByClientId(inputClaims.clientId, inputClaims.objectId);
+                var userRoleObjs = await _graph.GetUserAssignedRolesForApplicationByClientIdAsync(inputClaims.clientId, inputClaims.objectId);
                 var userRoles = userRoleObjs.Select(ur => ur.Value);
 
                 return StatusCode((int)HttpStatusCode.OK, new RoleResponse(string.Empty, HttpStatusCode.OK)

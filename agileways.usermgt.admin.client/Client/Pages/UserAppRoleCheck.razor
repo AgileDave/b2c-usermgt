@@ -1,7 +1,7 @@
 @page "/userrolecheck"
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
-@using agileways.usermgt.admin.client.Shared.DirectoryObjects
+@using agileways.usermgt.shared.Models.DirectoryObjects
 @attribute [Authorize(Policy = "GlobalAdmin")]
 @inject HttpClient Http
 @inject NavigationManager NavigationManager

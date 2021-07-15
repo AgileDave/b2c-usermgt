@@ -1,7 +1,7 @@
 
 using System.Collections.Generic;
 
-namespace agileways.usermgt.admin.client.Shared.DirectoryObjects
+namespace agileways.usermgt.shared.Models.DirectoryObjects
 {
     public class User
     {
@@ -11,5 +11,6 @@ namespace agileways.usermgt.admin.client.Shared.DirectoryObjects
         public string Id { get; set; }
         public string UserPrincipalName { get; set; }
         public IEnumerable<UserIdentity> Identities { get; set; }
+        public string CompanyId { get; set; }
     }
 }

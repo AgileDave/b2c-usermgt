@@ -2,8 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using agileways.usermgt.admin.client.Server.Services;
-using agileways.usermgt.admin.client.Shared.DirectoryObjects;
+using agileways.usermgt.shared.server.Services;
+using agileways.usermgt.shared.Models.DirectoryObjects;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;

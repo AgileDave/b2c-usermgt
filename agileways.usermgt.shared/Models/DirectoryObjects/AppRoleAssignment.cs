@@ -1,6 +1,6 @@
 
 
-namespace agileways.usermgt.api.Shared.DirectoryObjects
+namespace agileways.usermgt.shared.Models.DirectoryObjects
 {
 
     public class AppRoleAssignments
