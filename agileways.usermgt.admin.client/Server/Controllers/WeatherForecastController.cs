@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Web.Resource;
-using agileways.usermgt.admin.client.Shared;
+using agileways.usermgt.shared.Models;
 
 namespace agileways.usermgt.admin.client.Server.Controllers
 {

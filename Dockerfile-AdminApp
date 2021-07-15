@@ -13,17 +13,17 @@ USER appuser
 FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
 WORKDIR /src
 
-COPY ["Server/agileways.usermgt.admin.client.Server.csproj", "Server/"]
-COPY ["Shared/agileways.usermgt.admin.client.Shared.csproj", "Shared/"]
-COPY ["Client/agileways.usermgt.admin.client.Client.csproj", "Client/"]
+COPY ["agileways.usermgt.admin.client/Server/agileways.usermgt.admin.client.Server.csproj", "agileways.usermgt.admin.client/Server/"]
+COPY ["agileways.usermgt.shared/agileways.usermgt.shared.csproj", "agileways.usermgt.shared/"]
+COPY ["agileways.usermgt.admin.client/Client/agileways.usermgt.admin.client.Client.csproj", "agileways.usermgt.admin.client/Client/"]
 
-RUN dotnet restore "Server/agileways.usermgt.admin.client.Server.csproj"
-RUN dotnet restore "Shared/agileways.usermgt.admin.client.Shared.csproj"
-RUN dotnet restore "Client/agileways.usermgt.admin.client.Client.csproj"
+RUN dotnet restore "agileways.usermgt.admin.client/Server/agileways.usermgt.admin.client.Server.csproj"
+RUN dotnet restore "agileways.usermgt.shared/agileways.usermgt.admin.client.Shared.csproj"
+RUN dotnet restore "agileways.usermgt.admin.client/Client/agileways.usermgt.admin.client.Client.csproj"
 
 COPY . .
 
-WORKDIR "/src/Server"
+WORKDIR "/src/agileways.usermgt.admin.client/Server"
 
 RUN dotnet build "agileways.usermgt.admin.client.Server.csproj" -c Release -o /app/build
 

@@ -7,13 +7,14 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="5.0.6" />
+    <PackageReference Include="Microsoft.Authentication.WebAssembly.Msal" Version="5.0.6" />
     <PackageReference Include="Microsoft.Graph" Version="3.33.0" />
     <PackageReference Include="Microsoft.Graph.Auth" Version="1.0.0-preview.7" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Client\agileways.usermgt.admin.client.Client.csproj" />
-    <ProjectReference Include="..\Shared\agileways.usermgt.admin.client.Shared.csproj" />
+    <ProjectReference Include="..\..\agileways.usermgt.shared\agileways.usermgt.shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using agileways.usermgt.admin.client.Shared.DirectoryObjects;
+using agileways.usermgt.shared.Models.DirectoryObjects;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Graph;
 using Microsoft.Graph.Auth;
 using Microsoft.Identity.Client;
 
-namespace agileways.usermgt.admin.client.Server.Services
+namespace agileways.usermgt.shared.Services
 {
     public class GraphClient : IGraphClient
     {
@@ -183,7 +183,7 @@ namespace agileways.usermgt.admin.client.Server.Services
             }
         }
 
-        public async Task<IEnumerable<Shared.DirectoryObjects.User>> GetUsers()
+        public async Task<IEnumerable<Models.DirectoryObjects.User>> GetUsers()
         {
             var users = await _graphClient.Users
                                         .Request()
@@ -198,13 +198,13 @@ namespace agileways.usermgt.admin.client.Server.Services
                                         })
                                         .GetAsync();
 
-            var userPages = users.Select(u => new Shared.DirectoryObjects.User
+            var userPages = users.Select(u => new Models.DirectoryObjects.User
             {
                 Id = u.Id,
                 DisplayName = u.DisplayName,
                 GivenName = u.GivenName,
                 Surname = u.Surname,
-                Identities = u.Identities.Select(i => new Shared.DirectoryObjects.UserIdentity
+                Identities = u.Identities.Select(i => new Models.DirectoryObjects.UserIdentity
                 {
                     SignInType = i.SignInType,
                     Issuer = i.Issuer,
@@ -215,7 +215,7 @@ namespace agileways.usermgt.admin.client.Server.Services
             return userPages;
         }
 
-        public async Task<Shared.DirectoryObjects.ServicePrincipal> GetServicePrincipalFromApplicationName(string appName)
+        public async Task<Models.DirectoryObjects.ServicePrincipal> GetServicePrincipalFromApplicationName(string appName)
         {
             var spns = await _graphClient.ServicePrincipals
                                         .Request()
@@ -224,7 +224,7 @@ namespace agileways.usermgt.admin.client.Server.Services
 
             var spn = spns.FirstOrDefault();
 
-            return new Shared.DirectoryObjects.ServicePrincipal
+            return new Models.DirectoryObjects.ServicePrincipal
             {
                 Id = spn.Id,
                 AppId = spn.AppId,

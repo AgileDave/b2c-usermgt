@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using agileways.usermgt.admin.client.Shared.DirectoryObjects;
+using agileways.usermgt.shared.Models.DirectoryObjects;
 
-namespace agileways.usermgt.admin.client.Server.Services
+namespace agileways.usermgt.shared.Services
 {
     public interface IGraphClient
     {

@@ -3,7 +3,7 @@
 using System;
 using System.Globalization;
 
-namespace agileways.usermgt.admin.client.Server.Services
+namespace agileways.usermgt.shared.Services
 {
     public class AuthenticationConfig
     {

@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Shared\agileways.usermgt.admin.client.Shared.csproj" />
+    <ProjectReference Include="..\..\agileways.usermgt.shared\agileways.usermgt.shared.csproj" />
   </ItemGroup>
 
 </Project>

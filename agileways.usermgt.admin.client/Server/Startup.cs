@@ -9,7 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Linq;
-using agileways.usermgt.admin.client.Server.Services;
+using agileways.usermgt.shared.Services;
 
 namespace agileways.usermgt.admin.client.Server
 {
