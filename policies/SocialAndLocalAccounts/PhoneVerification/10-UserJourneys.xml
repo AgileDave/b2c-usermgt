@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="{Settings:Tenant}" PolicyId="B2C_1A_PhoneVerify_UserJourneys" PublicPolicyUri="http://{Settings:Tenant}/B2C_1A_PhoneVerify_UserJourneys">
+
+    <BasePolicy>
+        <TenantId>{Settings:Tenant}</TenantId>
+        <PolicyId>B2C_1A_PhoneVerify_ClaimsProviders</PolicyId>
+    </BasePolicy>
+
+    <UserJourneys>
+        <UserJourney Id="SignUpOrSignInMFAOption">
+            <OrchestrationSteps>
+
+                <OrchestrationStep Order="1" Type="CombinedSignInAndSignUp" ContentDefinitionReferenceId="api.signuporsignin">
+                    <ClaimsProviderSelections>
+                        <!-- <ClaimsProviderSelection TargetClaimsExchangeId="FacebookExchange"/> -->
+                        <ClaimsProviderSelection ValidationClaimsExchangeId="LocalAccountSigninEmailExchange"/>
+                    </ClaimsProviderSelections>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="LocalAccountSigninEmailExchange" TechnicalProfileReferenceId="SelfAsserted-LocalAccountSignin-Email"/>
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <!-- Check if the user has selected to sign in using one of the social providers -->
+                <OrchestrationStep Order="2" Type="ClaimsExchange">
+                    <Preconditions>
+                        <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+                            <Value>objectId</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <!-- <ClaimsExchange Id="FacebookExchange" TechnicalProfileReferenceId="Facebook-OAUTH"/> -->
+                        <ClaimsExchange Id="SignUpWithLogonEmailExchange" TechnicalProfileReferenceId="LocalAccountSignUpWithLogonEmail"/>
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+
+                <!-- This step reads any user attributes that we may not have received when authenticating using ESTS so they can be sent 
+          in the token. -->
+                <OrchestrationStep Order="3" Type="ClaimsExchange">
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="AADUserReadWithObjectId" TechnicalProfileReferenceId="AAD-UserReadUsingObjectId"/>
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <OrchestrationStep Order="4" Type="ClaimsExchange">
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="SetPhoneStatusToNew" TechnicalProfileReferenceId="Set-PhoneEntry-New"/>
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+
+                <!-- Phone verification: If MFA is not required, the next three steps (#5-#7) should be removed.
+             This step checks whether there's a phone number on record,  for the user. If found, then the user is challenged to verify it. -->
+                <OrchestrationStep Order="5" Type="InvokeSubJourney">
+                    <Preconditions>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+                            <Value>extension_isPhoneSet</Value>
+                            <Value>True</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+                            <Value>extension_isTotpSet</Value>
+                            <Value>True</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <JourneyList>
+                        <Candidate SubJourneyReferenceId="Sub_VerifyAndCollectPhoneType" />
+                    </JourneyList>
+                </OrchestrationStep>
+
+                <OrchestrationStep Order="6" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer"/>
+
+            </OrchestrationSteps>
+            <ClientDefinition ReferenceId="DefaultWeb"/>
+        </UserJourney>
+
+        <UserJourney Id="EditPhoneNumber">
+            <OrchestrationSteps>
+                <OrchestrationStep Order="1" Type="ClaimsProviderSelection" ContentDefinitionReferenceId="api.idpselections">
+                    <ClaimsProviderSelections>
+                        <ClaimsProviderSelection TargetClaimsExchangeId="LocalAccountSigninEmailExchange" />
+                    </ClaimsProviderSelections>
+                </OrchestrationStep>
+
+                <OrchestrationStep Order="2" Type="ClaimsExchange">
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="LocalAccountSigninEmailExchange" TechnicalProfileReferenceId="SelfAsserted-LocalAccountSignin-Email" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <OrchestrationStep Order="3" Type="ClaimsExchange">
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="AADUserReadWithObjectId" TechnicalProfileReferenceId="AAD-UserReadUsingObjectId"/>
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <OrchestrationStep Order="4" Type="ClaimsExchange">
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="SetPhoneStatusToNew" TechnicalProfileReferenceId="Set-PhoneEntry-Edit"/>
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <!-- Phone verification: If MFA is not required, the next three steps (#5-#7) should be removed.
+             This step checks whether there's a phone number on record,  for the user. If found, then the user is challenged to verify it. -->
+                <OrchestrationStep Order="5" Type="InvokeSubJourney">
+                    <JourneyList>
+                        <Candidate SubJourneyReferenceId="Sub_VerifyAndCollectPhoneType" />
+                    </JourneyList>
+                </OrchestrationStep>
+
+                <OrchestrationStep Order="6" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer"/>
+
+            </OrchestrationSteps>
+            <ClientDefinition ReferenceId="DefaultWeb"/>
+        </UserJourney>
+
+    </UserJourneys>
+
+    <SubJourneys>
+        <SubJourney Id="Sub_VerifyAndCollectPhoneType" Type="Call">
+            <OrchestrationSteps>
+
+                <OrchestrationStep Order="1" Type="ClaimsExchange">
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="SelfAsserted-Select-MFA-Method" TechnicalProfileReferenceId="SelfAsserted-Select-MFA-Method" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <OrchestrationStep Order="2" Type="InvokeSubJourney">
+                    <Preconditions>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+                            <Value>extension_mfaByPhoneOrTotp</Value>
+                            <Value>authn</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <JourneyList>
+                        <Candidate SubJourneyReferenceId="Set-PhoneFactor" />
+                    </JourneyList>
+                </OrchestrationStep>
+
+                <OrchestrationStep Order="3" Type="InvokeSubJourney">
+                    <Preconditions>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+                            <Value>extension_mfaByPhoneOrTotp</Value>
+                            <Value>phone</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <JourneyList>
+                        <Candidate SubJourneyReferenceId="Set-AppFactorTotp-Phone" />
+                    </JourneyList>
+                </OrchestrationStep>
+
+            </OrchestrationSteps>
+        </SubJourney>
+
+        <SubJourney Id="Set-PhoneFactor" Type="Call">
+            <OrchestrationSteps>
+                <!-- Phone verification: If MFA is not required, the next three steps (#5-#7) should be removed.
+             This step checks whether there's a phone number on record,  for the user. If found, then the user is challenged to verify it. -->
+                <OrchestrationStep Order="1" Type="ClaimsExchange">
+                    <Preconditions>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+                            <Value>isEditPhoneFlow</Value>
+                            <Value>True</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="PhoneFactor-New" TechnicalProfileReferenceId="PhoneFactor-InputOrVerify"/>
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <!-- Phone verification: If MFA is not required, the next three steps (#5-#7) should be removed.
+             This step checks whether there's a phone number on record,  for the user. If found, then the user is challenged to verify it. -->
+                <OrchestrationStep Order="2" Type="ClaimsExchange">
+                    <Preconditions>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+                            <Value>isEditPhoneFlow</Value>
+                            <Value>False</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="PhoneFactor-Edit" TechnicalProfileReferenceId="PhoneFactor-EditAndVerify"/>
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <!-- Save MFA phone number: The precondition verifies whether the user provided a new number in the 
+             previous step. If so, then the phone number is stored in the directory for future authentication 
+             requests. -->
+                <OrchestrationStep Order="3" Type="ClaimsExchange">
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="AADUserWriteWithObjectId" TechnicalProfileReferenceId="AAD-UserWritePhoneNumberUsingObjectId"/>
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+            </OrchestrationSteps>
+        </SubJourney>
+
+        <SubJourney Id="Set-AppFactorTotp-Phone" Type="Call">
+            <OrchestrationSteps>
+                <!-- Demo: The following orchestration step is executed only for unregistered 
+        accounts (new created account or if user cancel the sign-up process). 
+        It generates a verification app secret key for the user (none interactive step). -->
+                <OrchestrationStep Order="1" Type="ClaimsExchange">
+                    <Preconditions>
+                        <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+                            <Value>extension_StrongAuthenticationAppSecretKey</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="AppFactorGenerateTotpWebHook" TechnicalProfileReferenceId="AppFactor-GenerateTotpWebHook" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <!-- Demo: The following orchestration step is executed only for unregistered 
+        accounts (new created account or if user cancel the sign-up process). 
+        It registers a verification app through QR code that mobile authentication app should scan. -->
+                <OrchestrationStep Order="2" Type="ClaimsExchange">
+                    <Preconditions>
+                        <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+                            <Value>strongAuthenticationAppQRCodeBitmap</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+                            <Value>isActiveMFASession</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="AppFactorRegisterExchange" TechnicalProfileReferenceId="AppFactor-Register" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <!-- Demo: The following orchestration step is executed only for registered accounts.
+        It asks the user to provide the TOTP code and verifies the provided code (using validation technical profile). -->
+                <OrchestrationStep Order="3" Type="ClaimsExchange">
+                    <Preconditions>
+                        <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+                            <Value>strongAuthenticationAppQRCodeBitmap</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="AppFactorChallengeExchange" TechnicalProfileReferenceId="AppFactor-Challenge" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <!-- Demo: The following orchestration step is always executed.
+        It updates the verification app time step matched for a given user in the Azure Active Directory.
+        An error is raised if the user does not exist. -->
+                <OrchestrationStep Order="4" Type="ClaimsExchange">
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="AADWriteUserAppCodeByObjectId" TechnicalProfileReferenceId="AAD-WriteUserAppCodeByObjectId" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+            </OrchestrationSteps>
+        </SubJourney>
+    </SubJourneys>
+
+</TrustFrameworkPolicy>

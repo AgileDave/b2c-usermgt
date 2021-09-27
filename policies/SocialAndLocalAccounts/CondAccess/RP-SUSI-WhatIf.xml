@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" DeploymentMode="{Settings:DeploymentMode}" UserJourneyRecorderEndpoint="urn:journeyrecorder:applicationinsights" TenantId="{Settings:Tenant}" PolicyId="B2C_1A_CondAccess_SUSI_CA_WHATIF" PublicPolicyUri="http://{Settings:Tenant}/B2C_1A_CondAccess_SUSI_CA_WHATIF">
+
+    <BasePolicy>
+        <TenantId>{Settings:Tenant}</TenantId>
+        <PolicyId>B2C_1A_CondAccess_UserJourneys</PolicyId>
+    </BasePolicy>
+
+    <RelyingParty>
+        <DefaultUserJourney ReferenceId="SignUpOrSignInWithCA-WhatIf" />
+        <UserJourneyBehaviors>
+            <SingleSignOn Scope="Tenant" KeepAliveInDays="30" />
+            <SessionExpiryType>Absolute</SessionExpiryType>
+            <SessionExpiryInSeconds>1200</SessionExpiryInSeconds>
+            <JourneyInsights TelemetryEngine="ApplicationInsights" InstrumentationKey="{Settings:AppInsightsKey}" DeveloperMode="true" ClientEnabled="false" ServerEnabled="true" TelemetryVersion="1.0.0" />
+        </UserJourneyBehaviors>
+        <TechnicalProfile Id="PolicyProfile">
+            <DisplayName>PolicyProfile</DisplayName>
+            <Protocol Name="OpenIdConnect" />
+            <OutputClaims>
+                <OutputClaim ClaimTypeReferenceId="email" />
+                <OutputClaim ClaimTypeReferenceId="signInName" />
+                <OutputClaim ClaimTypeReferenceId="objectId" PartnerClaimType="sub" />
+                <OutputClaim ClaimTypeReferenceId="IP-Address" DefaultValue="{Context:IPAddress}" AlwaysUseDefaultValue="true" />
+                <OutputClaim ClaimTypeReferenceId="CAChallengeIsMfa" />
+                <OutputClaim ClaimTypeReferenceId="CAChallengeIsChgPwd" />
+
+                <OutputClaim ClaimTypeReferenceId="CAChallengeIsBlock" />
+                <OutputClaim ClaimTypeReferenceId="conditionalAccessClaimCollection" />
+                <OutputClaim ClaimTypeReferenceId="ConditionalAccessStatus" />
+                <OutputClaim ClaimTypeReferenceId="estsRequestId" />
+                <OutputClaim ClaimTypeReferenceId="trustFrameworkPolicy" DefaultValue="{policy}" Required="true"/>
+                <OutputClaim ClaimTypeReferenceId="tenantId" AlwaysUseDefaultValue="true" DefaultValue="{Policy:TenantObjectId}" />
+            </OutputClaims>
+            <SubjectNamingInfo ClaimType="sub" />
+        </TechnicalProfile>
+    </RelyingParty>
+</TrustFrameworkPolicy>

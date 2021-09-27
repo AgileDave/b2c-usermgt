@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="{Settings:Tenant}" PolicyId="B2C_1A_PhoneVerify_ClaimsProviders" PublicPolicyUri="http://{Settings:Tenant}/B2C_1A_PhoneVerify_ClaimsProviders">
+
+    <BasePolicy>
+        <TenantId>{Settings:Tenant}</TenantId>
+        <PolicyId>B2C_1A_PhoneVerify_BuildingBlocks</PolicyId>
+    </BasePolicy>
+
+    <ClaimsProviders>
+        <ClaimsProvider>
+            <DisplayName>Self Asserted</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="SelfAsserted-Select-MFA-Method">
+                    <DisplayName>Allow user to choose their MFA Method</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="ContentDefinitionReferenceId">api.selfasserted</Item>
+                    </Metadata>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="extension_mfaByPhoneOrTotp" Required="true"/>
+                    </OutputClaims>
+                </TechnicalProfile>
+
+                <!-- <TechnicalProfile Id="MfaMethod-SetFlag">
+                    <DisplayName>SetPhoneFlag</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ClaimsTransformationProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="extension_isPhoneSet" DefaultValue="true" AlwaysUseDefaultValue="true" />
+                    </OutputClaims>
+                </TechnicalProfile> -->
+
+                <!-- <TechnicalProfile Id="PhoneFactor-InputOrVerify2">
+                    <DisplayName>PhoneFactor</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.PhoneFactorProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="ContentDefinitionReferenceId">api.phonefactor</Item>
+                        <Item Key="ManualPhoneNumberEntryAllowed">true</Item>
+                    </Metadata>
+                    <CryptographicKeys>
+                        <Key Id="issuer_secret" StorageReferenceId="B2C_1A_TokenSigningKeyContainer" />
+                    </CryptographicKeys>
+                    <InputClaimsTransformations>
+                        <InputClaimsTransformation ReferenceId="CreateUserIdForMFA" />
+                    </InputClaimsTransformations>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="userIdForMFA" PartnerClaimType="UserId" />
+                        <InputClaim ClaimTypeReferenceId="strongAuthenticationPhoneNumber" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="strongAuthenticationPhoneNumber" PartnerClaimType="Verified.OfficePhone" />
+                        <OutputClaim ClaimTypeReferenceId="newPhoneNumberEntered" PartnerClaimType="newPhoneNumberEntered" />
+                    </OutputClaims>
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-MFA" />
+                </TechnicalProfile> -->
+
+                <TechnicalProfile Id="PhoneFactor-InputOrVerify">
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="strongAuthenticationPhoneNumber" PartnerClaimType="Verified.OfficePhone" />
+                    </OutputClaims>
+                    <OutputClaimsTransformations>
+                        <OutputClaimsTransformation ReferenceId="CopyMfaPhoneToMobile" />
+                    </OutputClaimsTransformations>
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="PhoneFactor-EditAndVerify">
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="strongAuthenticationPhoneNumber" PartnerClaimType="Verified.OfficePhone" />
+                    </OutputClaims>
+                    <OutputClaimsTransformations>
+                        <OutputClaimsTransformation ReferenceId="CopyMfaPhoneToMobile" />
+                    </OutputClaimsTransformations>
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="Set-PhoneEntry-Edit">
+                    <DisplayName>Clear Strong Authentication Number</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ClaimsTransformationProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="isEditPhoneFlow" DefaultValue="true" AlwaysUseDefaultValue="true" />
+                    </OutputClaims>
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="Set-PhoneEntry-New">
+                    <DisplayName>Clear Strong Authentication Number</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ClaimsTransformationProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="isEditPhoneFlow" DefaultValue="false" AlwaysUseDefaultValue="true" />
+                    </OutputClaims>
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+                </TechnicalProfile>
+
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+
+        <!-- Demo: The following claims provider defines the REST providers. -->
+        <ClaimsProvider>
+            <DisplayName>TOTP QR Code REST APIs</DisplayName>
+            <TechnicalProfiles>
+                <!-- Demo: The following technical profile generates a time-based one-time password (TOTP).
+        We use the technical  profile to register new user-->
+                <TechnicalProfile Id="AppFactor-GenerateTotpWebHook">
+                    <DisplayName>Generate TOTP Web Hook Azure Function</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="ServiceUrl">{Settings:TotpUrl}/api/identity/Generate</Item>
+                        <Item Key="AuthenticationType">None</Item>
+                        <Item Key="SendClaimsIn">Body</Item>
+                    </Metadata>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="email" PartnerClaimType="userName" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="strongAuthenticationAppQRCodeBitmap" PartnerClaimType="qrCodeBitmap" />
+                        <OutputClaim ClaimTypeReferenceId="extension_StrongAuthenticationAppSecretKey" PartnerClaimType="secretKey" />
+                    </OutputClaims>
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+                </TechnicalProfile>
+
+                <!-- Demo: The following technical profile verifies a time-based one-time password (TOTP).
+        We call this technical profile during registration process and sign-in process-->
+                <TechnicalProfile Id="AppFactor-VerifyTotpWebHook">
+                    <DisplayName>Verify TOTP Web Hook Azure Function</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="ServiceUrl">{Settings:TotpUrl}/api/identity/verify</Item>
+                        <Item Key="AuthenticationType">None</Item>
+                        <Item Key="SendClaimsIn">Body</Item>
+                    </Metadata>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="strongAuthenticationAppCode" PartnerClaimType="totpCode" />
+                        <InputClaim ClaimTypeReferenceId="extension_StrongAuthenticationAppSecretKey" PartnerClaimType="secretKey" />
+                        <InputClaim ClaimTypeReferenceId="extension_StrongAuthenticationAppTimeStepMatched" PartnerClaimType="timeStepMatched" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="extension_StrongAuthenticationAppTimeStepMatched" PartnerClaimType="timeStepMatched" />
+                    </OutputClaims>
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+
+        <ClaimsProvider>
+            <DisplayName>Azure Active Directory</DisplayName>
+            <TechnicalProfiles>
+
+                <TechnicalProfile Id="AAD-UserWriteMFAMethod">
+                    <Metadata>
+                        <Item Key="Operation">Write</Item>
+                        <Item Key="RaiseErrorIfClaimsPrincipalAlreadyExists">false</Item>
+                    </Metadata>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="objectId" />
+                    </InputClaims>
+                    <PersistedClaims>
+                        <!-- Required claims -->
+                        <PersistedClaim ClaimTypeReferenceId="objectId" />
+                        <PersistedClaim ClaimTypeReferenceId="userPrincipalName" />
+                        <PersistedClaim ClaimTypeReferenceId="extension_mfaByPhoneOrTotp" />
+                        <PersistedClaim ClaimTypeReferenceId="extension_isPhoneSet" />
+                        <PersistedClaim ClaimTypeReferenceId="displayName" />
+                    </PersistedClaims>
+                    <IncludeTechnicalProfile ReferenceId="AAD-Common" />
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-AAD" />
+                </TechnicalProfile>
+
+                <!-- <TechnicalProfile Id="AAD-UserWritePhoneNumberUsingObjectId2">
+                    <Metadata>
+                        <Item Key="Operation">Write</Item>
+                        <Item Key="RaiseErrorIfClaimsPrincipalAlreadyExists">false</Item>
+                        <Item Key="RaiseErrorIfClaimsPrincipalDoesNotExist">true</Item>
+                    </Metadata>
+                    <IncludeInSso>false</IncludeInSso>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="objectId" Required="true" />
+                    </InputClaims>
+                    <PersistedClaims>
+                        <PersistedClaim ClaimTypeReferenceId="objectId" />
+                        <PersistedClaim ClaimTypeReferenceId="strongAuthenticationPhoneNumber" PartnerClaimType="strongAuthenticationPhoneNumber" />
+                        <PersistedClaim ClaimTypeReferenceId="mobile" PartnerClaimType="strongAuthenticationPhoneNumber" />
+                        <PersistedClaim ClaimTypeReferenceId="extension_mfaByPhoneOrTotp" />
+                        <PersistedClaim ClaimTypeReferenceId="extension_isPhoneSet" DefaultValue="true" AlwaysUseDefaultValue="true" />
+                    </PersistedClaims>
+                    <IncludeTechnicalProfile ReferenceId="AAD-Common" />
+                </TechnicalProfile> -->
+
+                <TechnicalProfile Id="AAD-UserWritePhoneNumberUsingObjectId">
+                    <PersistedClaims>
+                        <!--Sample: Add the MFA preferred method to the persisted claims collection -->
+                        <PersistedClaim ClaimTypeReferenceId="objectId" />
+                        <PersistedClaim ClaimTypeReferenceId="strongAuthenticationPhoneNumber" PartnerClaimType="strongAuthenticationPhoneNumber" />
+                        <PersistedClaim ClaimTypeReferenceId="mobile" />
+                        <PersistedClaim ClaimTypeReferenceId="extension_mfaByPhoneOrTotp" />
+                        <PersistedClaim ClaimTypeReferenceId="extension_isPhoneSet" DefaultValue="true" AlwaysUseDefaultValue="true" />
+                    </PersistedClaims>
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="AAD-UserReadUsingObjectId">
+                    <OutputClaims>
+                        <!--Sample: Read the MFA preferred method-->
+                        <OutputClaim ClaimTypeReferenceId="extension_mfaByPhoneOrTotp"/>
+                        <OutputClaim ClaimTypeReferenceId="extension_isPhoneSet" />
+                        <OutputClaim ClaimTypeReferenceId="strongAuthenticationPhoneNumber" />
+                        <OutputClaim ClaimTypeReferenceId="mobile" />
+                        <!--Demo: Read AppFactor Azure Active Directory extension attributes -->
+                        <OutputClaim ClaimTypeReferenceId="extension_StrongAuthenticationAppSecretKey" />
+                        <OutputClaim ClaimTypeReferenceId="extension_StrongAuthenticationAppTimeStepMatched" />
+                        <OutputClaim ClaimTypeReferenceId="extension_isTotpSet" />
+                    </OutputClaims>
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="AAD-UserReadUsingAlternativeSecurityId">
+                    <OutputClaims>
+                        <!--Sample: Read the MFA preferred method-->
+                        <OutputClaim ClaimTypeReferenceId="extension_mfaByPhoneOrTotp"/>
+                        <OutputClaim ClaimTypeReferenceId="extension_isPhoneSet" />
+                        <OutputClaim ClaimTypeReferenceId="extension_isTotpSet" />
+                    </OutputClaims>
+                </TechnicalProfile>
+
+
+                <!-- TOTP QR Code AAD Profiles -->
+                <!-- Demo: The following technical profile updates the verification app for a user, identified by the object identifier for the user,
+             in the Azure Active Directory identity store. An error is raised if the user does not exist. -->
+                <TechnicalProfile Id="AAD-WriteUserAppCodeByObjectId">
+                    <Metadata>
+                        <Item Key="Operation">Write</Item>
+                        <Item Key="RaiseErrorIfClaimsPrincipalDoesNotExist">true</Item>
+                    </Metadata>
+                    <IncludeInSso>false</IncludeInSso>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="objectId" Required="true" />
+                    </InputClaims>
+                    <PersistedClaims>
+                        <PersistedClaim ClaimTypeReferenceId="objectId" />
+                        <PersistedClaim ClaimTypeReferenceId="extension_StrongAuthenticationAppSecretKey" />
+                        <PersistedClaim ClaimTypeReferenceId="extension_StrongAuthenticationAppTimeStepMatched" />
+                        <PersistedClaim ClaimTypeReferenceId="extension_isTotpSet" DefaultValue="true" AlwaysUseDefaultValue="true" />
+                    </PersistedClaims>
+                    <IncludeTechnicalProfile ReferenceId="AAD-Common" />
+                </TechnicalProfile>
+
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+
+        <ClaimsProvider>
+            <DisplayName>App Factor</DisplayName>
+            <TechnicalProfiles>
+
+                <!-- Demo: The following technical profile registers a verification phone. -->
+                <TechnicalProfile Id="AppFactor-Register">
+                    <DisplayName>App Factor</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="ContentDefinitionReferenceId">api.selfasserted.appfactor.registration</Item>
+                    </Metadata>
+                    <CryptographicKeys>
+                        <Key Id="issuer_secret" StorageReferenceId="B2C_1A_TokenSigningKeyContainer" />
+                    </CryptographicKeys>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="email" />
+                        <InputClaim ClaimTypeReferenceId="strongAuthenticationAppQRCodeBitmap" />
+                        <InputClaim ClaimTypeReferenceId="extension_StrongAuthenticationAppSecretKey" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="strongAuthenticationAppCode" Required="true" />
+                        <OutputClaim ClaimTypeReferenceId="strongAuthenticationAppQRCodeBitmap" />
+                        <OutputClaim ClaimTypeReferenceId="extension_StrongAuthenticationAppTimeStepMatched" />
+                        <OutputClaim ClaimTypeReferenceId="isActiveMFASession" DefaultValue="true"/>
+                    </OutputClaims>
+                    <ValidationTechnicalProfiles>
+                        <ValidationTechnicalProfile ReferenceId="AppFactor-VerifyTotpWebHook" />
+                    </ValidationTechnicalProfiles>
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SSOSession-PhoneFactor" />
+                </TechnicalProfile>
+
+                <!-- Demo: The following technical profile asks the user to provide the TOTP code
+        and run calls the validation technical profile to validate the TOTP-->
+                <TechnicalProfile Id="AppFactor-Challenge">
+                    <DisplayName>App Factor</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="ContentDefinitionReferenceId">api.selfasserted</Item>
+                    </Metadata>
+                    <CryptographicKeys>
+                        <Key Id="issuer_secret" StorageReferenceId="B2C_1A_TokenSigningKeyContainer" />
+                    </CryptographicKeys>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="email" />
+                        <InputClaim ClaimTypeReferenceId="extension_StrongAuthenticationAppSecretKey" />
+                        <InputClaim ClaimTypeReferenceId="extension_StrongAuthenticationAppTimeStepMatched" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="strongAuthenticationAppCode" Required="true" />
+                        <OutputClaim ClaimTypeReferenceId="extension_StrongAuthenticationAppTimeStepMatched" />
+                        <OutputClaim ClaimTypeReferenceId="isActiveMFASession" DefaultValue="true"/>
+                    </OutputClaims>
+                    <ValidationTechnicalProfiles>
+                        <ValidationTechnicalProfile ReferenceId="AppFactor-VerifyTotpWebHook" />
+                    </ValidationTechnicalProfiles>
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SSOSession-PhoneFactor" />
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="SSOSession-PhoneFactor">
+                    <DisplayName>Session Mananagement Provider</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.SSO.DefaultSSOSessionProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <PersistedClaims>
+                        <PersistedClaim ClaimTypeReferenceId="extension_StrongAuthenticationAppTimeStepMatched" />
+                    </PersistedClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="isActiveMFASession" DefaultValue="true"/>
+                    </OutputClaims>
+                </TechnicalProfile>
+
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+
+    </ClaimsProviders>
+
+
+</TrustFrameworkPolicy>

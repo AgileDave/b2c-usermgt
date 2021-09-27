@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="{Settings:Tenant}" PolicyId="B2C_1A_PhoneVal_BuildingBlocks" PublicPolicyUri="http://{Settings:Tenant}/B2C_1A_PhoneVal_BuildingBlocks">
+
+    <BasePolicy>
+        <TenantId>{Settings:Tenant}</TenantId>
+        <PolicyId>B2C_1A_TrustFrameworkExtensions</PolicyId>
+    </BasePolicy>
+
+    <BuildingBlocks>
+
+        <ClaimsSchema>
+            <ClaimType Id="mfaType">
+                <DisplayName>Choose type of MFA</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText>Choose type of MFA</UserHelpText>
+                <UserInputType>RadioSingleSelect</UserInputType>
+                <Restriction>
+                    <Enumeration Text="email" Value="email" />
+                    <Enumeration Text="phone" Value="phone" />
+                </Restriction>
+            </ClaimType>
+            <ClaimType Id="readOnlyPhone">
+                <DisplayName>Phone Number</DisplayName>
+                <DataType>string</DataType>
+                <Mask Type="Simple">XXX-XXX-</Mask>
+                <UserHelpText>Phone Number</UserHelpText>
+                <UserInputType>Readonly</UserInputType>
+
+            </ClaimType>
+            <ClaimType Id="readOnlyEmail">
+                <DisplayName>Email</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText>Email</UserHelpText>
+                <UserInputType>Readonly</UserInputType>
+            </ClaimType>
+            <ClaimType Id="verificationCode">
+                <DisplayName>Verification Code</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText>Enter your SMS verification code</UserHelpText>
+                <UserInputType>TextBox</UserInputType>
+                <!--Restriction>
+          <Pattern RegularExpression="^[0-9]{1,15}$" HelpText="Please enter digits" />
+        </Restriction-->
+            </ClaimType>
+
+            <!--MFA claims-->
+            <ClaimType Id="strongAuthenticationPhoneNumber">
+                <DisplayName>Phone Number</DisplayName>
+                <DataType>string</DataType>
+                <Mask Type="Simple">XXX-XXX-</Mask>
+                <UserHelpText>Your telephone number</UserHelpText>
+            </ClaimType>
+        </ClaimsSchema>
+        <ClaimsTransformations>
+            <ClaimsTransformation Id="CopyPhoneToReadOnly" TransformationMethod="CopyClaim">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="strongAuthenticationPhoneNumber" TransformationClaimType="inputClaim"/>
+                </InputClaims>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="readOnlyPhone" TransformationClaimType="outputClaim"/>
+                </OutputClaims>
+            </ClaimsTransformation>
+            <ClaimsTransformation Id="CopyEmailToReadOnly" TransformationMethod="CopyClaim">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="email" TransformationClaimType="inputClaim"/>
+                </InputClaims>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="readOnlyEmail" TransformationClaimType="outputClaim"/>
+                </OutputClaims>
+            </ClaimsTransformation>
+        </ClaimsTransformations>
+        <ContentDefinitions>
+            <!-- This content definition is to render an error page that displays unhandled errors. -->
+            <ContentDefinition Id="api.error">
+                <LoadUri>~/tenant/default/exception.cshtml</LoadUri>
+                <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+                <DataUri>urn:com:microsoft:aad:b2c:elements:globalexception:1.1.0</DataUri>
+                <Metadata>
+                    <Item Key="DisplayName">Error page</Item>
+                </Metadata>
+            </ContentDefinition>
+            <ContentDefinition Id="api.selfasserted.2.0.0">
+                <LoadUri>~/tenant/templates/AzureBlue/selfAsserted.cshtml</LoadUri>
+                <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+                <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:2.0.0</DataUri>
+                <Metadata>
+                    <Item Key="DisplayName">Collect information from user page</Item>
+                </Metadata>
+            </ContentDefinition>
+        </ContentDefinitions>
+        <DisplayControls>
+            <DisplayControl Id="verifyEmailOrPhoneControl" UserInterfaceControlType="VerificationControl">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="readOnlyPhone" />
+                    <InputClaim ClaimTypeReferenceId="readOnlyEmail" />
+                </InputClaims>
+                <DisplayClaims>
+                    <DisplayClaim ClaimTypeReferenceId="mfaType" Required="true" />
+                    <DisplayClaim ClaimTypeReferenceId="readOnlyPhone" />
+                    <DisplayClaim ClaimTypeReferenceId="readOnlyEmail" />
+                    <DisplayClaim ClaimTypeReferenceId="verificationCode" ControlClaimType="VerificationCode" Required="true" />
+                </DisplayClaims>
+                <Actions>
+                    <Action Id="SendCode">
+                        <ValidationClaimsExchange>
+                            <ValidationClaimsExchangeTechnicalProfile TechnicalProfileReferenceId="AzureMfa-SendSmsSimple">
+                                <Preconditions>
+                                    <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+                                        <Value>mfaType</Value>
+                                        <Value>email</Value>
+                                        <Action>SkipThisValidationTechnicalProfile</Action>
+                                    </Precondition>
+                                </Preconditions>
+                            </ValidationClaimsExchangeTechnicalProfile>
+                            <ValidationClaimsExchangeTechnicalProfile TechnicalProfileReferenceId="AadSspr-SendCode">
+                                <Preconditions>
+                                    <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+                                        <Value>mfaType</Value>
+                                        <Value>phone</Value>
+                                        <Action>SkipThisValidationTechnicalProfile</Action>
+                                    </Precondition>
+                                </Preconditions>
+                            </ValidationClaimsExchangeTechnicalProfile>
+                        </ValidationClaimsExchange>
+                    </Action>
+                    <Action Id="VerifyCode">
+                        <ValidationClaimsExchange>
+                            <ValidationClaimsExchangeTechnicalProfile TechnicalProfileReferenceId="AzureMfa-VerifySms">
+                                <Preconditions>
+                                    <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+                                        <Value>mfaType</Value>
+                                        <Value>email</Value>
+                                        <Action>SkipThisValidationTechnicalProfile</Action>
+                                    </Precondition>
+                                </Preconditions>
+                            </ValidationClaimsExchangeTechnicalProfile>
+                            <ValidationClaimsExchangeTechnicalProfile TechnicalProfileReferenceId="AadSspr-VerifyCode">
+                                <Preconditions>
+                                    <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+                                        <Value>mfaType</Value>
+                                        <Value>phone</Value>
+                                        <Action>SkipThisValidationTechnicalProfile</Action>
+                                    </Precondition>
+                                </Preconditions>
+                            </ValidationClaimsExchangeTechnicalProfile>
+                        </ValidationClaimsExchange>
+                    </Action>
+                </Actions>
+            </DisplayControl>
+        </DisplayControls>
+    </BuildingBlocks>
+
+
+
+</TrustFrameworkPolicy>

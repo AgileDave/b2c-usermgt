@@ -10,6 +10,18 @@
 
     <BuildingBlocks>
         <ClaimsSchema>
+            <ClaimType Id="IP-Address">
+                <DisplayName>ip address</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText>Users current logon IP Address</UserHelpText>
+            </ClaimType>
+
+            <ClaimType Id="CR-IP-Address">
+                <DisplayName>ip address</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText>Users current logon IP Address</UserHelpText>
+            </ClaimType>
+
             <ClaimType Id="groups">
                 <DisplayName>User Groups</DisplayName>
                 <DataType>stringCollection</DataType>
@@ -22,11 +34,72 @@
                 <UserHelpText/>
             </ClaimType>
 
+            <ClaimType Id="domain_hint">
+                <DisplayName>Domain Hint for AAD</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText/>
+            </ClaimType>
+            <ClaimType Id="mystate">
+                <DisplayName>State for AAD</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText/>
+            </ClaimType>
+            <ClaimType Id="reduri">
+                <DisplayName>Redirect URI for AAD</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText/>
+            </ClaimType>
+            <ClaimType Id="nonce">
+                <DisplayName>Nonce for AAD</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText/>
+            </ClaimType>
+
             <ClaimType Id="role">
                 <DisplayName>Login Hint for AAD</DisplayName>
                 <DataType>stringCollection</DataType>
                 <UserHelpText/>
             </ClaimType>
+
+
+            <!-- App Insights Claims -->
+
+            <ClaimType Id="EventType">
+                <DisplayName>Event type</DisplayName>
+                <DataType>string</DataType>
+            </ClaimType>
+            <ClaimType Id="EventTimestamp">
+                <DisplayName>Event timestamp</DisplayName>
+                <DataType>string</DataType>
+            </ClaimType>
+            <ClaimType Id="PolicyId">
+                <DisplayName>Policy Id</DisplayName>
+                <DataType>string</DataType>
+            </ClaimType>
+            <ClaimType Id="Culture">
+                <DisplayName>Culture ID</DisplayName>
+                <DataType>string</DataType>
+            </ClaimType>
+            <ClaimType Id="CorrelationId">
+                <DisplayName>Correlation Id</DisplayName>
+                <DataType>string</DataType>
+            </ClaimType>
+            <ClaimType Id="federatedUser">
+                <DisplayName>Federated user</DisplayName>
+                <DataType>boolean</DataType>
+            </ClaimType>
+            <ClaimType Id="parsedDomain">
+                <DisplayName>Domain name</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText>The domain portion of the email address.</UserHelpText>
+            </ClaimType>
+            <ClaimType Id="userInLocalDirectory">
+                <DisplayName>userInLocalDirectory</DisplayName>
+                <DataType>boolean</DataType>
+            </ClaimType>
+
+            <!-- End App Insight Claims -->
+
         </ClaimsSchema>
 
         <ClaimsTransformations>
@@ -38,6 +111,50 @@
                     <OutputClaim ClaimTypeReferenceId="login_hint" TransformationClaimType="createdClaim" />
                 </OutputClaims>
             </ClaimsTransformation>
+
         </ClaimsTransformations>
+
+        <ContentDefinitions>
+
+            <ContentDefinition Id="api.signuporsignin">
+                <LoadUri>~/tenant/templates/AzureBlue/unified.cshtml</LoadUri>
+                <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+                <DataUri>urn:com:microsoft:aad:b2c:elements:contract:unifiedssp:2.1.5</DataUri>
+                <Metadata>
+                    <Item Key="DisplayName">Signin and Signup</Item>
+                </Metadata>
+                <LocalizedResourcesReferences MergeBehavior="Prepend">
+                    <LocalizedResourcesReference Language="en" LocalizedResourcesReferenceId="api.signuporsignin.en" />
+                </LocalizedResourcesReferences>
+            </ContentDefinition>
+
+        </ContentDefinitions>
+
+        <Localization Enabled="true">
+            <SupportedLanguages DefaultLanguage="en" MergeBehavior="ReplaceAll">
+                <SupportedLanguage>en</SupportedLanguage>
+            </SupportedLanguages>
+            <LocalizedResources Id="api.signuporsignin.en">
+                <LocalizedStrings>
+                    <LocalizedString ElementType="UxElement" StringId="createaccount_intro">#Don't have an account?</LocalizedString>
+                    <LocalizedString ElementType="UxElement" StringId="forgotpassword_link">#Forgot your password?</LocalizedString>
+                    <LocalizedString ElementType="UxElement" StringId="divider_title">#OR</LocalizedString>
+                    <LocalizedString ElementType="UxElement" StringId="button_signin">#Sign in</LocalizedString>
+                    <LocalizedString ElementType="UxElement" StringId="social_intro">#Sign in with your social account</LocalizedString>
+                    <LocalizedString ElementType="UxElement" StringId="unknown_error">#We are having trouble signing you in. Please try again later.</LocalizedString>
+                    <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfInvalidPassword">#Your password is incorrect.</LocalizedString>
+                    <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfClaimsPrincipalDoesNotExist">#We can't seem to find your account.</LocalizedString>
+                    <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfOldPasswordUsed">#Looks like you used an old password.</LocalizedString>
+                    <LocalizedString ElementType="ErrorMessage" StringId="DefaultMessage">#Invalid username or password.</LocalizedString>
+                    <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfUserAccountDisabled">#Your account has been locked. Contact your support person to unlock it, then try again.</LocalizedString>
+                    <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfUserAccountLocked">#Your account is temporarily locked to prevent unauthorized use. Try again later.</LocalizedString>
+                    <LocalizedString ElementType="ErrorMessage" StringId="AADRequestsThrottled">#There are too many requests at this moment. Please wait for some time and try again.</LocalizedString>
+                    <LocalizedString ElementType="ErrorMessage" StringId="AADB2C90225">#The username and password are invalid, sir</LocalizedString>
+                    <LocalizedString ElementType="ErrorMessage" StringId="AADB2C90114">#You're locked out, shunned, shamed....try later, dude</LocalizedString>
+                </LocalizedStrings>
+            </LocalizedResources>
+        </Localization>
+
+
     </BuildingBlocks>
 </TrustFrameworkPolicy>

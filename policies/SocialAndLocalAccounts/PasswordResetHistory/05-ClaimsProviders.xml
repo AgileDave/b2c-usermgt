@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="{Settings:Tenant}" PolicyId="B2C_1A_ResetPassword_ClaimsProviders" PublicPolicyUri="http://{Settings:Tenant}/B2C_1A_ResetPassword_ClaimsProviders">
+
+    <BasePolicy>
+        <TenantId>{Settings:Tenant}</TenantId>
+        <PolicyId>B2C_1A_ResetPassword_BuildingBlocks</PolicyId>
+    </BasePolicy>
+
+    <ClaimsProviders>
+
+        <ClaimsProvider>
+            <DisplayName>Password reset overrides</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="LocalAccountDiscoveryUsingEmailAddress">
+                    <Metadata>
+                        <Item Key="EnforceEmailVerification">false</Item>
+                    </Metadata>
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+        <ClaimsProvider>
+            <DisplayName>Technical Profiles For Checking Password History</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="REST-PasswordHistoryCheck">
+                    <DisplayName>Validate that new password is not one of past 5 passwords</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"></Protocol>
+                    <Metadata>
+                        <Item Key="ServiceUrl">https://passwordhash.azurewebsites.net/passhash</Item>
+                        <Item Key="AuthenticationType">None</Item>
+                        <Item Key="AllowInsecureAuthInProduction">true</Item>
+                        <Item Key="SendClaimsIn">Body</Item>
+                        <Item Key="ClaimUsedForRequestPayload">userPassHash</Item>
+                        <Item Key="DefaultUserMessageIfRequestFailed">Cannot process your request right now, please try again later.</Item>
+                    </Metadata>
+                    <InputClaimsTransformations>
+                        <InputClaimsTransformation ReferenceId="HashPasswordWithEmail" />
+                        <InputClaimsTransformation ReferenceId="GeneratePassHashBody" />
+                    </InputClaimsTransformations>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="userPassHash" />
+                    </InputClaims>
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+        <ClaimsProvider>
+            <DisplayName>AAD Overrides</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="LocalAccountWritePasswordUsingObjectId-ForHistory">
+                    <DisplayName>Change password (username)</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="ContentDefinitionReferenceId">api.localaccountpasswordreset</Item>
+                    </Metadata>
+                    <CryptographicKeys>
+                        <Key Id="issuer_secret" StorageReferenceId="B2C_1A_TokenSigningKeyContainer" />
+                    </CryptographicKeys>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="objectId" />
+
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="newPassword" Required="true" />
+                        <OutputClaim ClaimTypeReferenceId="reenterPassword" Required="true" />
+                        <OutputClaim ClaimTypeReferenceId="IsPasswordValid" DefaultValue="true" />
+                    </OutputClaims>
+                    <ValidationTechnicalProfiles>
+                        <ValidationTechnicalProfile ReferenceId="REST-PasswordHistoryCheck" />
+                        <ValidationTechnicalProfile ReferenceId="AAD-UserWritePasswordUsingObjectId" />
+                    </ValidationTechnicalProfiles>
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+    </ClaimsProviders>
+
+</TrustFrameworkPolicy>

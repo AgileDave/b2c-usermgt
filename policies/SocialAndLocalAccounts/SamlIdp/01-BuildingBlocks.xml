@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="{Settings:Tenant}" PolicyId="B2C_1A_SamlIdp_BuildingBlocks" PublicPolicyUri="http://{Settings:Tenant}/B2C_1A_SamlIdp_BuildingBlocks">
+
+    <BasePolicy>
+        <TenantId>{Settings:Tenant}</TenantId>
+        <PolicyId>B2C_1A_TrustFrameworkExtensions</PolicyId>
+    </BasePolicy>
+
+    <BuildingBlocks>
+        <ClaimsSchema>
+            <!-- <ClaimType Id="groups">
+                <DisplayName>User Groups</DisplayName>
+                <DataType>stringCollection</DataType>
+                <UserHelpText>The groups a user has for this application</UserHelpText>
+            </ClaimType>
+ -->
+            <ClaimType Id="login_hint">
+                <DisplayName>Login Hint for AAD</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText/>
+            </ClaimType>
+
+            <!-- <ClaimType Id="role">
+                <DisplayName>Login Hint for AAD</DisplayName>
+                <DataType>stringCollection</DataType>
+                <UserHelpText/>
+            </ClaimType> -->
+        </ClaimsSchema>
+
+        <ClaimsTransformations>
+            <ClaimsTransformation Id="CreateLoginHintClaim" TransformationMethod="CreateStringClaim">
+                <InputParameters>
+                    <InputParameter Id="value" DataType="string" Value="{OAUTH-KV:lh}" />
+                </InputParameters>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="login_hint" TransformationClaimType="createdClaim" />
+                </OutputClaims>
+            </ClaimsTransformation>
+        </ClaimsTransformations>
+    </BuildingBlocks>
+</TrustFrameworkPolicy>

@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="{Settings:Tenant}" PolicyId="B2C_1A_CondAccess_ClaimsProviders" PublicPolicyUri="http://{Settings:Tenant}/B2C_1A_CondAccess_ClaimsProviders">
+
+    <BasePolicy>
+        <TenantId>{Settings:Tenant}</TenantId>
+        <PolicyId>B2C_1A_CondAccess_BuildingBlocks</PolicyId>
+    </BasePolicy>
+
+    <ClaimsProviders>
+        <ClaimsProvider>
+            <DisplayName>Local Account SignIn</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="SelfAsserted-LocalAccountSignin-Email">
+                    <Metadata>
+                        <Item Key="LocalAccountProfile">true</Item>
+                        <Item Key="setting.enableRememberMe">True</Item>
+                    </Metadata>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="isFederated" DefaultValue="false" AlwaysUseDefaultValue="true" />
+                        <OutputClaim ClaimTypeReferenceId="estsRequestId" DefaultValue="00000000-0000-0000-0000-000000000000" />
+                    </OutputClaims>
+                    <OutputClaimsTransformations>
+                        <OutputClaimsTransformation ReferenceId="CreatePasswordAuthenticationMethodClaim" />
+                        <OutputClaimsTransformation ReferenceId="AddToAuthenticationMethodsUsed" />
+                    </OutputClaimsTransformations>
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+        <ClaimsProvider>
+            <DisplayName>Conditional Access</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="ConditionalAccessEvaluation">
+                    <DisplayName>Conditional Access Provider</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ConditionalAccessProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="OperationType">Evaluation</Item>
+                    </Metadata>
+                    <InputClaimsTransformations>
+                        <InputClaimsTransformation ReferenceId="IsMfaRegisteredCT" />
+                    </InputClaimsTransformations>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="objectId" PartnerClaimType="UserId" />
+                        <InputClaim ClaimTypeReferenceId="AuthenticationMethodsUsed" />
+                        <InputClaim ClaimTypeReferenceId="IsFederated" DefaultValue="false" />
+                        <InputClaim ClaimTypeReferenceId="IsMfaRegistered" />
+                        <InputClaim ClaimTypeReferenceId="estsRequestId" DefaultValue="00000000-0000-0000-0000-000000000000" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="conditionalAccessClaimCollection" PartnerClaimType="Challenges" />
+                        <OutputClaim ClaimTypeReferenceId="ConditionalAccessStatus" PartnerClaimType="MultiConditionalAccessStatus" />
+                    </OutputClaims>
+                </TechnicalProfile>
+                <TechnicalProfile Id="ConditionalAccessRemediation">
+                    <DisplayName>Conditional Access Remediation</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ConditionalAccessProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"/>
+                    <Metadata>
+                        <Item Key="OperationType">Remediation</Item>
+                    </Metadata>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="conditionalAccessClaimCollection" PartnerClaimType="ChallengesSatisfied" />
+                    </InputClaims>
+                </TechnicalProfile>
+                <TechnicalProfile Id="GenerateCAClaimFlags">
+                    <DisplayName>GenerateCAClaimFlags</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ClaimsTransformationProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="CAChallengeIsMfa" />
+                        <OutputClaim ClaimTypeReferenceId="CAChallengeIsChgPwd" />
+                        <OutputClaim ClaimTypeReferenceId="CAChallengeIsBlock" />
+                    </OutputClaims>
+                    <OutputClaimsTransformations>
+                        <OutputClaimsTransformation ReferenceId="SetCAChallengeIsMfa" />
+                        <OutputClaimsTransformation ReferenceId="SetCAChallengeIsChgPwd" />
+                        <OutputClaimsTransformation ReferenceId="SetCAChallengeIsBlock" />
+                    </OutputClaimsTransformations>
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+        <ClaimsProvider>
+            <DisplayName>Local Account</DisplayName>
+            <TechnicalProfiles>
+
+                <TechnicalProfile Id="LocalAccountSignUpWithLogonEmail">
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="isLocalAccountSignUp" DefaultValue="true" AlwaysUseDefaultValue="true" />
+                    </OutputClaims>
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="ShowBlockPage">
+                    <DisplayName>Show Block message</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"/>
+                    <Metadata>
+                        <Item Key="ContentDefinitionReferenceId">api.selfasserted</Item>
+                        <Item Key="TokenLifeTimeInSeconds">3600</Item>
+                        <Item Key="AllowGenerationOfClaimsWithNullValues">true</Item>
+                        <Item Key="setting.showContinueButton">false</Item>
+                        <Item Key="setting.showCancelButton">false</Item>
+                    </Metadata>
+                    <CryptographicKeys>
+                        <Key Id="issuer_secret" StorageReferenceId="B2C_1A_TokenSigningKeyContainer" />
+                    </CryptographicKeys>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="responseMsg" DefaultValue="Due to recent activity associated with your account, your login has been temporarily blocked."/>
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="responseMsg"/>
+                    </OutputClaims>
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop"/>
+                    <EnabledForUserJourneys>Always</EnabledForUserJourneys>
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+    </ClaimsProviders>
+
+</TrustFrameworkPolicy>

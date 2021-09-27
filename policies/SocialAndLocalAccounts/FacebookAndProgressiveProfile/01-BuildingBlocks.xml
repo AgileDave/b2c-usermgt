@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="{Settings:Tenant}" PolicyId="B2C_1A_ProgressiveProfile_BuildingBlocks" PublicPolicyUri="http://{Settings:Tenant}/B2C_1A_ProgressiveProfile_BuildingBlocks">
+
+    <BasePolicy>
+        <TenantId>{Settings:Tenant}</TenantId>
+        <PolicyId>B2C_1A_TrustFrameworkExtensions</PolicyId>
+    </BasePolicy>
+    <BuildingBlocks>
+        <ClaimsSchema>
+            <ClaimType Id="issuerUserId">
+                <DisplayName>Username</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText/>
+                <UserInputType>TextBox</UserInputType>
+                <Restriction>
+                    <Pattern RegularExpression="^[a-zA-Z0-9]+[a-zA-Z0-9_-]*$" HelpText="The username you provided is not valid. It must begin with an alphabet or number and can contain alphabets, numbers and the following symbols: _ -"/>
+                </Restriction>
+            </ClaimType>
+            <ClaimType Id="streetAddress">
+                <DisplayName>Billing Address</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText>Your billing street address</UserHelpText>
+                <UserInputType>TextBox</UserInputType>
+            </ClaimType>
+            <ClaimType Id="city">
+                <DisplayName>City</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText>Your billing city</UserHelpText>
+                <UserInputType>TextBox</UserInputType>
+            </ClaimType>
+            <ClaimType Id="state">
+                <DisplayName>State</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText>Your billing state</UserHelpText>
+                <UserInputType>TextBox</UserInputType>
+            </ClaimType>
+            <ClaimType Id="postalCode">
+                <DisplayName>Zip/Postal Code</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText>Your billing zip or postal code</UserHelpText>
+                <UserInputType>TextBox</UserInputType>
+            </ClaimType>
+
+        </ClaimsSchema>
+    </BuildingBlocks>
+</TrustFrameworkPolicy>

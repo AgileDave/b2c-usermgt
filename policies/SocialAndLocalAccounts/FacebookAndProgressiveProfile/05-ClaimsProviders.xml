@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="{Settings:Tenant}" PolicyId="B2C_1A_ProgressiveProfile_ClaimsProviders" PublicPolicyUri="http://{Settings:Tenant}/B2C_1A_ProgressiveProfile_ClaimsProviders">
+
+    <BasePolicy>
+        <TenantId>{Settings:Tenant}</TenantId>
+        <PolicyId>B2C_1A_ProgressiveProfile_BuildingBlocks</PolicyId>
+    </BasePolicy>
+
+    <ClaimsProviders>
+
+        <ClaimsProvider>
+            <!--  The following Domain element allows this profile to be used if the request comes with domain_hint
+           query string parameter, e.g. domain_hint=facebook.com   -->
+            <Domain>facebook.com</Domain>
+            <DisplayName>Facebook</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="Facebook-OAUTH">
+                    <!--  The text in the following DisplayName element is shown to the user on the claims provider
+               selection screen.  -->
+                    <DisplayName>Facebook</DisplayName>
+                    <Protocol Name="OAuth2"/>
+                    <Metadata>
+                        <Item Key="ProviderName">facebook</Item>
+                        <Item Key="authorization_endpoint">https://www.facebook.com/dialog/oauth</Item>
+                        <Item Key="AccessTokenEndpoint">https://graph.facebook.com/oauth/access_token</Item>
+                        <Item Key="HttpBinding">GET</Item>
+                        <Item Key="UsePolicyInRedirectUri">0</Item>
+                        <!--  The Facebook required HTTP GET method, but the access token response is in JSON format from 3/27/2017  -->
+                        <Item Key="AccessTokenResponseFormat">json</Item>
+                        <Item Key="client_id">3965079293617599</Item>
+                        <Item Key="scope">email public_profile</Item>
+                        <Item Key="ClaimsEndpoint">https://graph.facebook.com/me?fields=id,first_name,last_name,name,email</Item>
+                    </Metadata>
+                    <CryptographicKeys>
+                        <Key Id="client_secret" StorageReferenceId="B2C_1A_FacebookSecret"/>
+                    </CryptographicKeys>
+                    <InputClaims/>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="issuerUserId" PartnerClaimType="id" />
+                        <OutputClaim ClaimTypeReferenceId="givenName" PartnerClaimType="first_name"/>
+                        <OutputClaim ClaimTypeReferenceId="surname" PartnerClaimType="last_name"/>
+                        <OutputClaim ClaimTypeReferenceId="displayName" PartnerClaimType="name"/>
+                        <OutputClaim ClaimTypeReferenceId="email" PartnerClaimType="email"/>
+                        <OutputClaim ClaimTypeReferenceId="identityProvider" DefaultValue="facebook.com"/>
+                        <OutputClaim ClaimTypeReferenceId="authenticationSource" DefaultValue="socialIdpAuthentication"/>
+                    </OutputClaims>
+                    <OutputClaimsTransformations>
+                        <OutputClaimsTransformation ReferenceId="CreateRandomUPNUserName"/>
+                        <OutputClaimsTransformation ReferenceId="CreateUserPrincipalName"/>
+                        <OutputClaimsTransformation ReferenceId="CreateAlternativeSecurityId"/>
+                    </OutputClaimsTransformations>
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-SocialLogin"/>
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+        <ClaimsProvider>
+            <DisplayName>Self Asserted</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="SelfAsserted-ProfileUpdate">
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="streetAddress" Required="true"/>
+                        <OutputClaim ClaimTypeReferenceId="city" Required="true"/>
+                        <OutputClaim ClaimTypeReferenceId="state" Required="true"/>
+                        <OutputClaim ClaimTypeReferenceId="postalCode" Required="true"/>
+                    </OutputClaims>
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+        <ClaimsProvider>
+            <DisplayName>Azure Active Directory</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="AAD-UserWriteProfileUsingObjectId">
+                    <PersistedClaims>
+                        <PersistedClaim ClaimTypeReferenceId="streetAddress"/>
+                        <PersistedClaim ClaimTypeReferenceId="city"/>
+                        <PersistedClaim ClaimTypeReferenceId="state"/>
+                        <PersistedClaim ClaimTypeReferenceId="postalCode"/>
+                    </PersistedClaims>
+                </TechnicalProfile>
+                <TechnicalProfile Id="AAD-UserReadUsingObjectId">
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="streetAddress"/>
+                        <OutputClaim ClaimTypeReferenceId="city" Required="true"/>
+                        <OutputClaim ClaimTypeReferenceId="state" Required="true"/>
+                        <OutputClaim ClaimTypeReferenceId="postalCode" Required="true"/>
+                    </OutputClaims>
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+    </ClaimsProviders>
+
+</TrustFrameworkPolicy>

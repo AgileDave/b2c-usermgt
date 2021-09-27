@@ -31,6 +31,8 @@
                         <!-- <Item Key="ValidTokenIssuerPrefixes">https://login.microsoftonline.com/00000000-0000-0000-0000-000000000000,https://login.microsoftonline.com/11111111-1111-1111-1111-111111111111</Item> -->
                         <!-- The commented key below specifies that users from any tenant can sign-in. Uncomment if you would like anyone with an Azure AD account to be able to sign in. -->
                         <Item Key="ValidTokenIssuerPrefixes">https://login.microsoftonline.com/</Item>
+                        <Item Key="IncludeClaimResolvingInClaimsHandling">true</Item>
+                        <Item Key="ProviderName">Common AAD Endpoint</Item>
                     </Metadata>
                     <CryptographicKeys>
                         <Key Id="client_secret" StorageReferenceId="B2C_1A_AADAppSecret"/>
@@ -51,6 +53,7 @@
                         <OutputClaim ClaimTypeReferenceId="identityProvider" PartnerClaimType="iss" />
                         <OutputClaim ClaimTypeReferenceId="groups" PartnerClaimType="groups" />
                         <OutputClaim ClaimTypeReferenceId="role" PartnerClaimType="extn.role" />
+                        <OutputClaim ClaimTypeReferenceId="CR-IP-Address" DefaultValue="{Context:IPAddress}" AlwaysUseDefaultValue="true" />
                     </OutputClaims>
                     <OutputClaimsTransformations>
                         <OutputClaimsTransformation ReferenceId="CreateRandomUPNUserName"/>
@@ -59,6 +62,78 @@
                         <OutputClaimsTransformation ReferenceId="CreateSubjectClaimFromAlternativeSecurityId"/>
                     </OutputClaimsTransformations>
                     <UseTechnicalProfileForSessionManagement ReferenceId="SM-SocialLogin"/>
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="SelfAsserted-LocalAccountSignin-Email">
+                    <Metadata>
+                        <Item Key="IncludeClaimResolvingInClaimsHandling">true</Item>
+                    </Metadata>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="CR-IP-Address" DefaultValue="{Context:IPAddress}" AlwaysUseDefaultValue="true" />
+                    </OutputClaims>
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="SimpleUJContext">
+                    <DisplayName>User Journey Context Provide</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.UserJourneyContextProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="IP-Address" />
+                    </OutputClaims>
+                </TechnicalProfile>
+
+
+
+                <TechnicalProfile Id="Get-Parameters">
+                    <DisplayName>Profile to populate calims with parameters</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ClaimsTransformationProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="IncludeClaimResolvingInClaimsHandling">true</Item>
+                    </Metadata>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="domain_hint" DefaultValue="{oauth-kv:target_domain_hint}" AlwaysUseDefaultValue="true"/>
+                        <OutputClaim ClaimTypeReferenceId="mystate" DefaultValue="{OAUTH-KV:state}" AlwaysUseDefaultValue="true"/>
+                        <OutputClaim ClaimTypeReferenceId="reduri" DefaultValue="{OIDC:RedirectUri}" AlwaysUseDefaultValue="true"/>
+                        <OutputClaim ClaimTypeReferenceId="nonce" DefaultValue="{OIDC:Nonce}" AlwaysUseDefaultValue="true"/>
+                    </OutputClaims>
+                </TechnicalProfile>
+
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+
+        <ClaimsProvider>
+            <DisplayName>Application Insights</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="AppInsights-Common">
+                    <DisplayName>Application Insights</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.Insights.AzureApplicationInsightsProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <!-- The ApplicationInsights instrumentation key, which you use for logging the events -->
+                        <Item Key="InstrumentationKey">{Settings:AppInsightsKey}</Item>
+                        <Item Key="DeveloperMode">true</Item>
+                        <Item Key="DisableTelemetry ">false</Item>
+                        <Item Key="IncludeClaimResolvingInClaimsHandling">true</Item>
+                    </Metadata>
+                    <InputClaims>
+                        <!-- Properties of an event are added through the syntax {property:NAME}, 
+                                where NAME is the property being added to the event. DefaultValue can be 
+                                either a static value or a value that's resolved by one of the supported DefaultClaimResolvers. -->
+                        <InputClaim ClaimTypeReferenceId="eventTimestamp" PartnerClaimType="{property:EventTimestamp}" DefaultValue="{Context:DateTimeInUtc}" />
+                        <InputClaim ClaimTypeReferenceId="tenantId" PartnerClaimType="{property:TenantId}" DefaultValue="{Policy:TrustFrameworkTenantId}" />
+                        <InputClaim ClaimTypeReferenceId="policyId" PartnerClaimType="{property:Policy}" DefaultValue="{Policy:PolicyId}" />
+                        <InputClaim ClaimTypeReferenceId="correlationId" PartnerClaimType="{property:CorrelationId}" DefaultValue="{Context:CorrelationId}" />
+                        <InputClaim ClaimTypeReferenceId="culture" PartnerClaimType="{property:Culture}" DefaultValue="{Culture:RFC5646}" />
+                        <InputClaim ClaimTypeReferenceId="domain_hint" PartnerClaimType="{property:DomainHint}" />
+                        <InputClaim ClaimTypeReferenceId="mystate" PartnerClaimType="{property:MyState}" />
+                        <InputClaim ClaimTypeReferenceId="nonce" PartnerClaimType="{property:Nonce}" />
+                        <InputClaim ClaimTypeReferenceId="reduri" PartnerClaimType="{property:Redirect-Uri}" />
+                    </InputClaims>
+                </TechnicalProfile>
+                <TechnicalProfile Id="AppInsights-JourneyStarted">
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="EventType" PartnerClaimType="eventName" DefaultValue="JourneyStarted" />
+                    </InputClaims>
+                    <IncludeTechnicalProfile ReferenceId="AppInsights-Common" />
                 </TechnicalProfile>
             </TechnicalProfiles>
         </ClaimsProvider>

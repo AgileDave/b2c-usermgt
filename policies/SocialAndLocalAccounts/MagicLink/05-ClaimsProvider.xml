@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="{Settings:Tenant}" PolicyId="B2C_1A_MagicLink_ClaimsProviders" PublicPolicyUri="http://{Settings:Tenant}/B2C_1A_MagicLink_ClaimsProviders">
+
+    <BasePolicy>
+        <TenantId>{Settings:Tenant}</TenantId>
+        <PolicyId>B2C_1A_MagicLink_BuildingBlocks</PolicyId>
+    </BasePolicy>
+
+    <ClaimsProviders>
+        <ClaimsProvider>
+            <DisplayName>Local Account</DisplayName>
+            <TechnicalProfiles>
+                <!--Sample: This technical profile collect the email address, and call a validation technical profile 
+        to send the magic link to the provided email address-->
+                <TechnicalProfile Id="SelfAsserted-LocalAccountSignin-MagicLink">
+                    <DisplayName>Magic link</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"/>
+                    <Metadata>
+                        <Item Key="ContentDefinitionReferenceId">api.selfasserted</Item>
+                    </Metadata>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="email" Required="true"/>
+                        <OutputClaim ClaimTypeReferenceId="magicLinkSent" />
+                    </OutputClaims>
+                    <OutputClaimsTransformations>
+                        <OutputClaimsTransformation ReferenceId="CreateUserMessage" />
+                    </OutputClaimsTransformations>
+                    <ValidationTechnicalProfiles>
+                        <ValidationTechnicalProfile ReferenceId="REST-SendMacigLink"/>
+                    </ValidationTechnicalProfiles>
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-AAD"/>
+                </TechnicalProfile>
+
+                <!-- Demo: Show email sent message-->
+                <TechnicalProfile Id="SelfAsserted-EmailSent">
+                    <DisplayName>Sing-in with local account</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"/>
+                    <Metadata>
+                        <Item Key="ContentDefinitionReferenceId">api.selfasserted</Item>
+                        <!-- Sample: Remove the continue and cancel button-->
+                        <Item Key="setting.showContinueButton">false</Item>
+                        <Item Key="setting.showCancelButton">false</Item>
+                    </Metadata>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="userMessage"/>
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="userMessage"/>
+                    </OutputClaims>
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+        <!--Sample: This technical profile sends a magic link to the provided email address-->
+        <ClaimsProvider>
+            <DisplayName>Custom REST API</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="REST-SendMacigLink">
+                    <DisplayName>Send a magic link</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <!--Sample action required: replace with your endpoint location -->
+                        <Item Key="ServiceUrl">{Settings:MagicLinkUrl}/api/identity</Item>
+                        <Item Key="AuthenticationType">None</Item>
+                        <Item Key="SendClaimsIn">Body</Item>
+                    </Metadata>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="email" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="magicLinkSent" DefaultValue="true" AlwaysUseDefaultValue="true"/>
+                    </OutputClaims>
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+        <!--Sample: This technical profile specifies how B2C should validate your token, and what claims you want B2C to extract from the token. 
+      The METADATA value in the TechnicalProfile meta-data is required. 
+      The “IdTokenAudience” and “issuer” arguments are optional (see later section)-->
+        <ClaimsProvider>
+            <DisplayName>My ID Token Hint ClaimsProvider</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="IdTokenHint_ExtractClaims">
+                    <DisplayName> My ID Token Hint TechnicalProfile</DisplayName>
+                    <Protocol Name="None" />
+                    <Metadata>
+
+                        <!--Sample action required: replace with your endpoint location -->
+                        <Item Key="METADATA">{Settings:MagicLinkUrl}/.well-known/openid-configuration</Item>
+
+                        <!-- <Item Key="IdTokenAudience">your_optional_audience_override</Item> -->
+                        <!-- <Item Key="issuer">your_optional_token_issuer_override</Item> -->
+                    </Metadata>
+                    <OutputClaims>
+                        <!--Sample: Read the email cliam from the id_token_hint-->
+                        <OutputClaim ClaimTypeReferenceId="email" />
+                    </OutputClaims>
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+        <ClaimsProvider>
+            <DisplayName>Self Asserted</DisplayName>
+            <TechnicalProfiles>
+                <!-- Demo: Show error message-->
+                <TechnicalProfile Id="SelfAsserted-Error">
+                    <DisplayName>Unsolicited error message</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"/>
+                    <Metadata>
+                        <Item Key="ContentDefinitionReferenceId">api.selfasserted</Item>
+                        <!-- Sample: Remove the continue button-->
+                        <Item Key="setting.showContinueButton">false</Item>
+                    </Metadata>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="errorMessage"/>
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="errorMessage"/>
+                    </OutputClaims>
+                </TechnicalProfile>
+
+                <!-- Demo: Show unsolicited error message-->
+                <TechnicalProfile Id="SelfAsserted-Unsolicited">
+                    <InputClaimsTransformations>
+                        <InputClaimsTransformation ReferenceId="CreateUnsolicitedErrorMessage" />
+                    </InputClaimsTransformations>
+                    <IncludeTechnicalProfile ReferenceId="SelfAsserted-Error" />
+                </TechnicalProfile>
+
+                <!-- Demo: Show user not found error message-->
+                <TechnicalProfile Id="SelfAsserted-UserNotFound">
+                    <InputClaimsTransformations>
+                        <InputClaimsTransformation ReferenceId="CreateUserNotFoundErrorMessage" />
+                    </InputClaimsTransformations>
+                    <IncludeTechnicalProfile ReferenceId="SelfAsserted-Error" />
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+        <ClaimsProvider>
+            <DisplayName>Azure Active Directory</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="AAD-UserReadUsingEmailAddress">
+                    <Metadata>
+                        <!--Sample: don't raise error if user not found. We have an orchestration step to handle the error message-->
+                        <Item Key="RaiseErrorIfClaimsPrincipalDoesNotExist">false</Item>
+                    </Metadata>
+                    <OutputClaims>
+                        <!--Sample: add optional claims to read from the directory-->
+                        <OutputClaim ClaimTypeReferenceId="givenName"/>
+                        <OutputClaim ClaimTypeReferenceId="surname"/>
+                    </OutputClaims>
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+    </ClaimsProviders>
+
+</TrustFrameworkPolicy>

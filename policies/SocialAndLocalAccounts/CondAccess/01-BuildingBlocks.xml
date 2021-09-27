@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="{Settings:Tenant}" PolicyId="B2C_1A_CondAccess_BuildingBlocks" PublicPolicyUri="http://{Settings:Tenant}/B2C_1A_CondAccess_BuildingBlocks">
+
+    <BasePolicy>
+        <TenantId>{Settings:Tenant}</TenantId>
+        <PolicyId>B2C_1A_TrustFrameworkExtensions</PolicyId>
+    </BasePolicy>
+
+    <BuildingBlocks>
+        <ClaimsSchema>
+            <ClaimType Id="IP-Address">
+                <DisplayName>IP Address</DisplayName>
+                <DataType>string</DataType>
+                <AdminHelpText />
+                <UserHelpText />
+            </ClaimType>
+            <ClaimType Id="isLocalAccountSignUp">
+                <DisplayName>isLocalAccountSignUp</DisplayName>
+                <DataType>boolean</DataType>
+            </ClaimType>
+            <ClaimType Id="responseMsg">
+                <DisplayName></DisplayName>
+                <DataType>string</DataType>
+                <AdminHelpText>A claim responsible for holding response messages to send to the relying party</AdminHelpText>
+                <UserHelpText>A claim responsible for holding response messages to send to the relying party</UserHelpText>
+                <UserInputType>Paragraph</UserInputType>
+            </ClaimType>
+            <!-- CA claims  -->
+            <ClaimType Id="conditionalAccessClaimCollection">
+                <DisplayName>Conditional Access claims</DisplayName>
+                <DataType>stringCollection</DataType>
+                <AdminHelpText>The list of claims which are the result of CA check</AdminHelpText>
+            </ClaimType>
+            <ClaimType Id="trustFrameworkPolicy">
+                <DisplayName>trustFrameworkPolicy</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText>TtrustFrameworkPolicy name.</UserHelpText>
+            </ClaimType>
+            <ClaimType Id="ConditionalAccessStatus">
+                <DisplayName>The status of CA evaluation</DisplayName>
+                <DataType>stringCollection</DataType>
+                <AdminHelpText>The status of CA evaluation</AdminHelpText>
+            </ClaimType>
+            <ClaimType Id="AuthenticationMethodsUsed">
+                <DisplayName>Authentication methods used</DisplayName>
+                <DataType>stringCollection</DataType>
+                <AdminHelpText>The list of authentication methods used</AdminHelpText>
+            </ClaimType>
+            <ClaimType Id="AuthenticationMethodUsed">
+                <DisplayName>Authentication method used</DisplayName>
+                <DataType>string</DataType>
+                <AdminHelpText>The authentication method used</AdminHelpText>
+            </ClaimType>
+            <ClaimType Id="IsFederated">
+                <DisplayName>IsFederated</DisplayName>
+                <DataType>boolean</DataType>
+                <AdminHelpText>Is user authenticated via an external identity provider</AdminHelpText>
+            </ClaimType>
+            <ClaimType Id="IsMfaRegistered">
+                <DisplayName>IsMfaRegistered</DisplayName>
+                <DataType>boolean</DataType>
+                <AdminHelpText>Is user registered for MFA</AdminHelpText>
+            </ClaimType>
+            <ClaimType Id="CAChallengeIsMfa">
+                <DisplayName>CAChallengeIsMfa</DisplayName>
+                <DataType>boolean</DataType>
+            </ClaimType>
+            <ClaimType Id="CAChallengeIsChgPwd">
+                <DisplayName>CAChallengeIsChgPwd</DisplayName>
+                <DataType>boolean</DataType>
+            </ClaimType>
+            <ClaimType Id="CAChallengeIsBlock">
+                <DisplayName>CAChallengeIsBlock</DisplayName>
+                <DataType>boolean</DataType>
+            </ClaimType>
+            <ClaimType Id="estsRequestId">
+                <DisplayName>estsRequestId</DisplayName>
+                <DataType>string</DataType>
+                <AdminHelpText>stores request id from ests</AdminHelpText>
+            </ClaimType>
+
+            <!-- End of CA claims -->
+
+            <!--MFA claims-->
+            <ClaimType Id="strongAuthenticationPhoneNumber">
+                <DisplayName>Phone Number</DisplayName>
+                <DataType>string</DataType>
+                <Mask Type="Simple">XXX-XXX-</Mask>
+                <UserHelpText>Your telephone number</UserHelpText>
+            </ClaimType>
+
+        </ClaimsSchema>
+
+        <ClaimsTransformations>
+            <!-- Conditional access claims transformations-->
+            <ClaimsTransformation Id="AddToAuthenticationMethodsUsed" TransformationMethod="AddItemToStringCollection">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="AuthenticationMethodUsed" TransformationClaimType="item" />
+                    <InputClaim ClaimTypeReferenceId="AuthenticationMethodsUsed" TransformationClaimType="collection" />
+                </InputClaims>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="AuthenticationMethodsUsed" TransformationClaimType="collection" />
+                </OutputClaims>
+            </ClaimsTransformation>
+            <ClaimsTransformation Id="CreatePasswordAuthenticationMethodClaim" TransformationMethod="CreateStringClaim">
+                <InputParameters>
+                    <InputParameter Id="value" DataType="string" Value="Password" />
+                </InputParameters>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="AuthenticationMethodUsed" TransformationClaimType="createdClaim" />
+                </OutputClaims>
+            </ClaimsTransformation>
+            <ClaimsTransformation Id="CreateOneTimePasscodeAuthenticationMethodClaim" TransformationMethod="CreateStringClaim">
+                <InputParameters>
+                    <InputParameter Id="value" DataType="string" Value="OneTimePasscode" />
+                </InputParameters>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="AuthenticationMethodUsed" TransformationClaimType="createdClaim" />
+                </OutputClaims>
+            </ClaimsTransformation>
+            <ClaimsTransformation Id="IsMfaRegisteredCT" TransformationMethod="DoesClaimExist">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="strongAuthenticationPhoneNumber" TransformationClaimType="inputClaim" />
+                </InputClaims>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="IsMfaRegistered" TransformationClaimType="outputClaim" />
+                </OutputClaims>
+            </ClaimsTransformation>
+            <ClaimsTransformation Id="SetCAChallengeIsMfa" TransformationMethod="StringCollectionContains">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="conditionalAccessClaimCollection" TransformationClaimType="inputClaim" />
+                </InputClaims>
+                <InputParameters>
+                    <InputParameter Id="item" DataType="string" Value="mfa" />
+                    <InputParameter Id="ignoreCase" DataType="string" Value="true" />
+                </InputParameters>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="CAChallengeIsMfa" TransformationClaimType="outputClaim" />
+                </OutputClaims>
+            </ClaimsTransformation>
+            <ClaimsTransformation Id="SetCAChallengeIsChgPwd" TransformationMethod="StringCollectionContains">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="conditionalAccessClaimCollection" TransformationClaimType="inputClaim" />
+                </InputClaims>
+                <InputParameters>
+                    <InputParameter Id="item" DataType="string" Value="chg_pwd" />
+                    <InputParameter Id="ignoreCase" DataType="string" Value="true" />
+                </InputParameters>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="CAChallengeIsChgPwd" TransformationClaimType="outputClaim" />
+                </OutputClaims>
+            </ClaimsTransformation>
+            <ClaimsTransformation Id="SetCAChallengeIsBlock" TransformationMethod="StringCollectionContains">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="conditionalAccessClaimCollection" TransformationClaimType="inputClaim" />
+                </InputClaims>
+                <InputParameters>
+                    <InputParameter Id="item" DataType="string" Value="block" />
+                    <InputParameter Id="ignoreCase" DataType="string" Value="true" />
+                </InputParameters>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="CAChallengeIsBlock" TransformationClaimType="outputClaim" />
+                </OutputClaims>
+            </ClaimsTransformation>
+        </ClaimsTransformations>
+
+        <ContentDefinitions>
+            <ContentDefinition Id="api.signuporsignin">
+                <LoadUri>~/tenant/templates/AzureBlue/unified.cshtml</LoadUri>
+                <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+                <DataUri>urn:com:microsoft:aad:b2c:elements:unifiedssp:1.1.0</DataUri>
+                <Metadata>
+                    <Item Key="DisplayName">Signin and Signup</Item>
+                </Metadata>
+            </ContentDefinition>
+        </ContentDefinitions>
+    </BuildingBlocks>
+
+</TrustFrameworkPolicy>
