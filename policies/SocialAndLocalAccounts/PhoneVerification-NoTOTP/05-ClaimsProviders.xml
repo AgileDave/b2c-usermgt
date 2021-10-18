@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="{Settings:Tenant}" PolicyId="B2C_1A_PhoneVerify_ClaimsProviders" PublicPolicyUri="http://{Settings:Tenant}/B2C_1A_PhoneVerify_ClaimsProviders">
+
+    <BasePolicy>
+        <TenantId>{Settings:Tenant}</TenantId>
+        <PolicyId>B2C_1A_PhoneVerify_BuildingBlocks</PolicyId>
+    </BasePolicy>
+
+    <ClaimsProviders>
+        <ClaimsProvider>
+            <DisplayName>Self Asserted</DisplayName>
+            <TechnicalProfiles>
+
+                <TechnicalProfile Id="PhoneFactor-InputOrVerify">
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="strongAuthenticationPhoneNumber" PartnerClaimType="Verified.OfficePhone" />
+                    </OutputClaims>
+                    <OutputClaimsTransformations>
+                        <OutputClaimsTransformation ReferenceId="CopyMfaPhoneToMobile" />
+                        <OutputClaimsTransformation ReferenceId="CopyMfaPhoneToMobileExt" />
+                    </OutputClaimsTransformations>
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="PhoneFactor-EditAndVerify">
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="strongAuthenticationPhoneNumber" PartnerClaimType="Verified.OfficePhone" />
+                    </OutputClaims>
+                    <OutputClaimsTransformations>
+                        <OutputClaimsTransformation ReferenceId="CopyMfaPhoneToMobile" />
+                        <OutputClaimsTransformation ReferenceId="CopyMfaPhoneToMobileExt" />
+                    </OutputClaimsTransformations>
+                    <!-- Add No-Op here so that bypassing this screen doesn't happen with an MFA session -->
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="Set-PhoneEntry-Edit">
+                    <DisplayName>Clear Strong Authentication Number</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ClaimsTransformationProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="isEditPhoneFlow" DefaultValue="true" AlwaysUseDefaultValue="true" />
+                    </OutputClaims>
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="Set-PhoneEntry-New">
+                    <DisplayName>Clear Strong Authentication Number</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ClaimsTransformationProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="isEditPhoneFlow" DefaultValue="false" AlwaysUseDefaultValue="true" />
+                    </OutputClaims>
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="Collect-NewPhone-FromUser">
+                    <DisplayName>New Phone Entry</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="ContentDefinitionReferenceId">api.selfasserted</Item>
+                        <Item Key="language.button_continue">Continue</Item>
+                    </Metadata>
+                    <DisplayClaims>
+                        <DisplayClaim ClaimTypeReferenceId="userEnteredPhone" />
+                    </DisplayClaims>
+                    <ValidationTechnicalProfiles>
+                        <ValidationTechnicalProfile ReferenceId="AAD-UserCheckPhoneNumber" />
+                    </ValidationTechnicalProfiles>
+                </TechnicalProfile>
+
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+        <ClaimsProvider>
+            <DisplayName>Azure Active Directory</DisplayName>
+            <TechnicalProfiles>
+
+                <TechnicalProfile Id="AAD-UserCheckPhoneNumber">
+                    <Metadata>
+                        <Item Key="Operation">Read</Item>
+                        <Item Key="RaiseErrorIfClaimsPrincipalAlreadyExists">false</Item>
+                    </Metadata>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="userEnteredPhone" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="tempMobile" PartnerClaimType="mobile" />
+                    </OutputClaims>
+                    <IncludeTechnicalProfile ReferenceId="AAD-Common" />
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-AAD" />
+                </TechnicalProfile>
+
+
+                <TechnicalProfile Id="AAD-UserWriteMFAMethod">
+                    <Metadata>
+                        <Item Key="Operation">Write</Item>
+                        <Item Key="RaiseErrorIfClaimsPrincipalAlreadyExists">false</Item>
+                    </Metadata>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="objectId" />
+                    </InputClaims>
+                    <PersistedClaims>
+                        <!-- Required claims -->
+                        <PersistedClaim ClaimTypeReferenceId="objectId" />
+                        <PersistedClaim ClaimTypeReferenceId="userPrincipalName" />
+                        <PersistedClaim ClaimTypeReferenceId="extension_isPhoneSet" />
+                        <PersistedClaim ClaimTypeReferenceId="displayName" />
+                    </PersistedClaims>
+                    <IncludeTechnicalProfile ReferenceId="AAD-Common" />
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-AAD" />
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="AAD-UserWritePhoneNumberUsingObjectId">
+                    <PersistedClaims>
+                        <!--Sample: Add the MFA preferred method to the persisted claims collection -->
+                        <PersistedClaim ClaimTypeReferenceId="objectId" />
+                        <PersistedClaim ClaimTypeReferenceId="strongAuthenticationPhoneNumber" PartnerClaimType="strongAuthenticationPhoneNumber" />
+                        <PersistedClaim ClaimTypeReferenceId="mobile" />
+                        <PersistedClaim ClaimTypeReferenceId="extension_mobilePhone" />
+                        <PersistedClaim ClaimTypeReferenceId="extension_isPhoneSet" DefaultValue="true" AlwaysUseDefaultValue="true" />
+                    </PersistedClaims>
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="AAD-UserReadUsingObjectId">
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="extension_isPhoneSet" />
+                        <OutputClaim ClaimTypeReferenceId="strongAuthenticationPhoneNumber" />
+                        <OutputClaim ClaimTypeReferenceId="mobile" />
+                        <OutputClaim ClaimTypeReferenceId="extension_mobilePhone" />
+                    </OutputClaims>
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="AAD-UserReadUsingAlternativeSecurityId">
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="extension_isPhoneSet" />
+                    </OutputClaims>
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+    </ClaimsProviders>
+
+
+</TrustFrameworkPolicy>

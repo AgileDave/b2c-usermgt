@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-    xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="{Settings:Tenant}" PolicyId="B2C_1A_SAML_IdP_Initiated" PublicPolicyUri="http://{Settings:Tenant}/B2C_1A_SAML_IdP_Initiated">
+    xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" DeploymentMode="{Settings:DeploymentMode}" UserJourneyRecorderEndpoint="urn:journeyrecorder:applicationinsights" PolicySchemaVersion="0.3.0.0" TenantId="{Settings:Tenant}" PolicyId="B2C_1A_SAML_IdP_Initiated" PublicPolicyUri="http://{Settings:Tenant}/B2C_1A_SAML_IdP_Initiated">
 
     <BasePolicy>
         <TenantId>{Settings:Tenant}</TenantId>
@@ -44,6 +44,17 @@
                 <DataType>string</DataType>
                 <UserHelpText/>
             </ClaimType>
+
+            <ClaimType Id="extension_loyaltyLevel">
+                <DisplayName>The customer's loyalty level (GOLD, SILVER, or BRONZE)</DisplayName>
+                <DataType>string</DataType>
+            </ClaimType>
+            <ClaimType Id="extension_loyaltyNumber">
+                <DisplayName>Loyalty Number</DisplayName>
+                <DataType>string</DataType>
+                <UserInputType>TextBox</UserInputType>
+            </ClaimType>
+
         </ClaimsSchema>
     </BuildingBlocks>
 
@@ -85,6 +96,11 @@
                         <OutputClaim ClaimTypeReferenceId="identityProvider" DefaultValue="TESTIDP" />
                         <OutputClaim ClaimTypeReferenceId="issuerUserId" PartnerClaimType="objectid"/>
                         <OutputClaim ClaimTypeReferenceId="authenticationSource" DefaultValue="socialIdpAuthentication"/>
+                        <OutputClaim ClaimTypeReferenceId="extension_loyaltyNumber" DefaultValue="good123" AlwaysUseDefaultValue="true" />
+                        <!-- Uncomment this output claim, and comment the one above, for a bad loyalty id -->
+                        <!--
+                        <OutputClaim ClaimTypeReferenceId="extension_loyaltyNumber" DefaultValue="bad123" AlwaysUseDefaultValue="true" />
+                        -->
 
                     </OutputClaims>
                     <OutputClaimsTransformations>
@@ -97,6 +113,50 @@
                 </TechnicalProfile>
             </TechnicalProfiles>
         </ClaimsProvider>
+
+        <ClaimsProvider>
+            <DisplayName>Technical Profiles For Handling Loyalty</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="Form-LoyaltyCheck">
+                    <DisplayName>Enter loyalty</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="ContentDefinitionReferenceId">api.selfasserted</Item>
+                    </Metadata>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="extension_loyaltyNumber" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="extension_loyaltyNumber" />
+                        <OutputClaim ClaimTypeReferenceId="extension_loyaltyLevel" />
+                    </OutputClaims>
+                    <ValidationTechnicalProfiles>
+                        <ValidationTechnicalProfile ReferenceId="REST-LoyaltyCheck" ContinueOnError="false" />
+                    </ValidationTechnicalProfiles>
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="REST-LoyaltyCheck">
+                    <DisplayName>Validate that new password is not one of past 5 passwords</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"></Protocol>
+                    <Metadata>
+                        <Item Key="ServiceUrl">{Settings:LoyaltyRestApi}</Item>
+                        <Item Key="AuthenticationType">None</Item>
+                        <Item Key="AllowInsecureAuthInProduction">true</Item>
+                        <Item Key="SendClaimsIn">Body</Item>
+                        <Item Key="DefaultUserMessageIfRequestFailed">Cannot process your request right now, please try again later.</Item>
+                    </Metadata>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="extension_loyaltyNumber" PartnerClaimType="extension_fe49ff62ac584ec39706452de6fb7fe7_loyaltyNumber" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="extension_loyaltyNumber" PartnerClaimType="extension_loyaltyNumber" />
+                        <OutputClaim ClaimTypeReferenceId="extension_loyaltyLevel" PartnerClaimType="extension_loyaltyLevel" />
+                    </OutputClaims>
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
         <ClaimsProvider>
             <DisplayName>SAML Token Issuer</DisplayName>
             <TechnicalProfiles>
@@ -139,10 +199,19 @@
                     </ClaimsExchanges>
                 </OrchestrationStep>
 
+                <OrchestrationStep Order="3" Type="ClaimsExchange">
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="LoyaltyCheck" TechnicalProfileReferenceId="REST-LoyaltyCheck" />
+                        <!-- Uncomment this to call the self-asserted profile that calls REST-LoyaltyCheck as a Validation Tech Profile -->
+                        <!--
+                        <ClaimsExchange Id="LoyaltyCheck" TechnicalProfileReferenceId="FORM-LoyaltyCheck" />
+                        -->
+                    </ClaimsExchanges>
+                </OrchestrationStep>
 
                 <!-- This step reads any user attributes that we may not have received when authenticating using ESTS so they can be sent 
           in the token. -->
-                <OrchestrationStep Order="3" Type="ClaimsExchange">
+                <OrchestrationStep Order="4" Type="ClaimsExchange">
                     <Preconditions>
                         <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
                             <Value>authenticationSource</Value>
@@ -157,7 +226,7 @@
                 <!-- The previous step (SelfAsserted-Social) could have been skipped if there were no attributes to collect 
              from the user. So, in that case, create the user in the directory if one does not already exist 
              (verified using objectId which would be set from the last step if account was created in the directory. -->
-                <OrchestrationStep Order="4" Type="ClaimsExchange">
+                <OrchestrationStep Order="5" Type="ClaimsExchange">
                     <Preconditions>
                         <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
                             <Value>objectId</Value>
@@ -169,7 +238,7 @@
                     </ClaimsExchanges>
                 </OrchestrationStep>
 
-                <OrchestrationStep Order="5" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="SAMLAssert" />
+                <OrchestrationStep Order="6" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="SAMLAssert" />
 
             </OrchestrationSteps>
             <ClientDefinition ReferenceId="DefaultWeb" />
@@ -178,6 +247,9 @@
 
     <RelyingParty>
         <DefaultUserJourney ReferenceId="SignUpOrSignInIdpInitiated" />
+        <UserJourneyBehaviors>
+            <JourneyInsights TelemetryEngine="ApplicationInsights" InstrumentationKey="{Settings:AppInsightsKey}" DeveloperMode="true" ClientEnabled="false" ServerEnabled="true" TelemetryVersion="1.0.0" />
+        </UserJourneyBehaviors>
         <TechnicalProfile Id="SAMLRP">
             <DisplayName>PolicyProfile</DisplayName>
             <Protocol Name="SAML2" />
@@ -194,6 +266,8 @@
                 <OutputClaim ClaimTypeReferenceId="surname" />
                 <OutputClaim ClaimTypeReferenceId="signInName" />
                 <OutputClaim ClaimTypeReferenceId="identityProvider" />
+                <OutputClaim ClaimTypeReferenceId="extension_loyaltyNumber" />
+                <OutputClaim ClaimTypeReferenceId="extension_loyaltyLevel" />
             </OutputClaims>
             <SubjectNamingInfo ClaimType="SubjectNamingInfo" Format="urn:oasis:names:tc:SAML:2.0:nameid-format:transient"/>
         </TechnicalProfile>

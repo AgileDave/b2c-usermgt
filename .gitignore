@@ -42,6 +42,7 @@ scenarios
 LocalAccounts
 Display Controls Starterpack
 Environments
+*.drawio
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/

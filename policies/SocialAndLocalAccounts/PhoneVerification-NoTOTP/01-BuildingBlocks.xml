@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="{Settings:Tenant}" PolicyId="B2C_1A_PhoneVerify_BuildingBlocks" PublicPolicyUri="http://{Settings:Tenant}/B2C_1A_PhoneVerify_BuildingBlocks">
+
+    <BasePolicy>
+        <TenantId>{Settings:Tenant}</TenantId>
+        <PolicyId>B2C_1A_MFA_Extensions</PolicyId>
+    </BasePolicy>
+
+    <BuildingBlocks>
+        <ClaimsSchema>
+            <ClaimType Id="extension_isPhoneSet">
+                <DisplayName>The status of users phone number</DisplayName>
+                <DataType>boolean</DataType>
+                <AdminHelpText>This claim holds the status of the user's phone number</AdminHelpText>
+            </ClaimType>
+
+            <!-- Adding this as extension method as another option to either mobile or strongAuthPhone attribute -->
+            <ClaimType Id="extension_mobilePhone">
+                <DisplayName>Mobile Number</DisplayName>
+                <DataType>string</DataType>
+            </ClaimType>
+
+            <ClaimType Id="isEditPhoneFlow">
+                <DisplayName>The status of users phone number</DisplayName>
+                <DataType>boolean</DataType>
+                <AdminHelpText>This claim holds the status of the user's phone number</AdminHelpText>
+            </ClaimType>
+
+            <ClaimType Id="userEnteredPhone">
+                <DisplayName>New Phone Number</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText>Your new telephone number</UserHelpText>
+                <UserInputType>TextBox</UserInputType>
+            </ClaimType>
+
+            <ClaimType Id="tempMobile">
+                <DisplayName>Temporary Mobile Number</DisplayName>
+                <DataType>string</DataType>
+            </ClaimType>
+
+        </ClaimsSchema>
+
+        <ClaimsTransformations>
+            <ClaimsTransformation Id="CopyMfaPhoneToMobile" TransformationMethod="CopyClaim">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="strongAuthenticationPhoneNumber" TransformationClaimType="inputClaim"/>
+                </InputClaims>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="mobile" TransformationClaimType="outputClaim"/>
+                </OutputClaims>
+            </ClaimsTransformation>
+            <ClaimsTransformation Id="CopyMfaPhoneToMobileExt" TransformationMethod="CopyClaim">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="strongAuthenticationPhoneNumber" TransformationClaimType="inputClaim"/>
+                </InputClaims>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="extension_mobilePhone" TransformationClaimType="outputClaim"/>
+                </OutputClaims>
+            </ClaimsTransformation>
+        </ClaimsTransformations>
+
+        <ContentDefinitions>
+            <ContentDefinition Id="api.selfasserted.appfactor.registration">
+                <!--<LoadUri>~/tenant/default/selfasserted.cshtml</LoadUri>-->
+                <LoadUri>{Settings:TotpUrl}/selfasserted-appfactor-registration.html</LoadUri>
+                <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+                <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:2.1.7</DataUri>
+                <Metadata>
+                    <Item Key="DisplayName">App Factor</Item>
+                </Metadata>
+            </ContentDefinition>
+            <ContentDefinition Id="api.error">
+                <DataUri>urn:com:microsoft:aad:b2c:elements:contract:globalexception:1.2.0</DataUri>
+            </ContentDefinition>
+            <ContentDefinition Id="api.idpselections">
+                <DataUri>urn:com:microsoft:aad:b2c:elements:contract:providerselection:1.2.0</DataUri>
+            </ContentDefinition>
+            <ContentDefinition Id="api.idpselections.signup">
+                <DataUri>urn:com:microsoft:aad:b2c:elements:contract:providerselection:1.2.0</DataUri>
+            </ContentDefinition>
+            <ContentDefinition Id="api.signuporsignin">
+                <DataUri>urn:com:microsoft:aad:b2c:elements:contract:unifiedssp:1.2.0</DataUri>
+            </ContentDefinition>
+            <ContentDefinition Id="api.selfasserted">
+                <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:2.1.7</DataUri>
+            </ContentDefinition>
+            <ContentDefinition Id="api.selfasserted.profileupdate">
+                <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:2.1.7</DataUri>
+            </ContentDefinition>
+            <ContentDefinition Id="api.localaccountsignup">
+                <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:2.1.7</DataUri>
+            </ContentDefinition>
+            <ContentDefinition Id="api.localaccountpasswordreset">
+                <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:2.1.7</DataUri>
+            </ContentDefinition>
+            <ContentDefinition Id="api.phonefactor">
+                <DataUri>urn:com:microsoft:aad:b2c:elements:contract:multifactor:1.2.5</DataUri>
+                <LocalizedResourcesReferences MergeBehavior="Prepend">
+                    <LocalizedResourcesReference Language="en" LocalizedResourcesReferenceId="api.phonefactor.en" />
+                </LocalizedResourcesReferences>
+            </ContentDefinition>
+        </ContentDefinitions>
+
+        <Localization Enabled="true">
+            <SupportedLanguages DefaultLanguage="en" MergeBehavior="ReplaceAll">
+                <SupportedLanguage>en</SupportedLanguage>
+            </SupportedLanguages>
+            <LocalizedResources Id="api.phonefactor.en">
+                <LocalizedStrings>
+                    <LocalizedString ElementType="UxElement" StringId="intro_entry_mixed">Enter a phone number to associate with your account. We will send a code via SMS to verify the number.</LocalizedString>
+                </LocalizedStrings>
+            </LocalizedResources>
+        </Localization>
+
+    </BuildingBlocks>
+
+
+</TrustFrameworkPolicy>

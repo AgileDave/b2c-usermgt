@@ -61,6 +61,7 @@
                     </OutputClaims>
                     <OutputClaimsTransformations>
                         <OutputClaimsTransformation ReferenceId="CopyMfaPhoneToMobile" />
+                        <OutputClaimsTransformation ReferenceId="CopyMfaPhoneToMobileExt" />
                     </OutputClaimsTransformations>
                 </TechnicalProfile>
 
@@ -70,7 +71,10 @@
                     </OutputClaims>
                     <OutputClaimsTransformations>
                         <OutputClaimsTransformation ReferenceId="CopyMfaPhoneToMobile" />
+                        <OutputClaimsTransformation ReferenceId="CopyMfaPhoneToMobileExt" />
                     </OutputClaimsTransformations>
+                    <!-- Add No-Op here so that bypassing this screen doesn't happen with an MFA session -->
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
                 </TechnicalProfile>
 
                 <TechnicalProfile Id="Set-PhoneEntry-Edit">
@@ -89,6 +93,24 @@
                         <OutputClaim ClaimTypeReferenceId="isEditPhoneFlow" DefaultValue="false" AlwaysUseDefaultValue="true" />
                     </OutputClaims>
                     <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="Collect-NewPhone-FromUser">
+                    <DisplayName>New Phone Entry</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="ContentDefinitionReferenceId">api.selfasserted</Item>
+                        <Item Key="language.button_continue">Continue</Item>
+                    </Metadata>
+                    <DisplayClaims>
+                        <DisplayClaim ClaimTypeReferenceId="userEnteredPhone" />
+                    </DisplayClaims>
+                    <!-- <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="userEnteredPhone" />
+                    </OutputClaims> -->
+                    <ValidationTechnicalProfiles>
+                        <ValidationTechnicalProfile ReferenceId="AAD-UserCheckPhoneNumber" />
+                    </ValidationTechnicalProfiles>
                 </TechnicalProfile>
 
             </TechnicalProfiles>
@@ -147,6 +169,22 @@
             <DisplayName>Azure Active Directory</DisplayName>
             <TechnicalProfiles>
 
+                <TechnicalProfile Id="AAD-UserCheckPhoneNumber">
+                    <Metadata>
+                        <Item Key="Operation">Read</Item>
+                        <Item Key="RaiseErrorIfClaimsPrincipalAlreadyExists">false</Item>
+                    </Metadata>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="userEnteredPhone" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="tempMobile" PartnerClaimType="mobile" />
+                    </OutputClaims>
+                    <IncludeTechnicalProfile ReferenceId="AAD-Common" />
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-AAD" />
+                </TechnicalProfile>
+
+
                 <TechnicalProfile Id="AAD-UserWriteMFAMethod">
                     <Metadata>
                         <Item Key="Operation">Write</Item>
@@ -193,6 +231,7 @@
                         <PersistedClaim ClaimTypeReferenceId="objectId" />
                         <PersistedClaim ClaimTypeReferenceId="strongAuthenticationPhoneNumber" PartnerClaimType="strongAuthenticationPhoneNumber" />
                         <PersistedClaim ClaimTypeReferenceId="mobile" />
+                        <PersistedClaim ClaimTypeReferenceId="extension_mobilePhone" />
                         <PersistedClaim ClaimTypeReferenceId="extension_mfaByPhoneOrTotp" />
                         <PersistedClaim ClaimTypeReferenceId="extension_isPhoneSet" DefaultValue="true" AlwaysUseDefaultValue="true" />
                     </PersistedClaims>
@@ -205,6 +244,7 @@
                         <OutputClaim ClaimTypeReferenceId="extension_isPhoneSet" />
                         <OutputClaim ClaimTypeReferenceId="strongAuthenticationPhoneNumber" />
                         <OutputClaim ClaimTypeReferenceId="mobile" />
+                        <OutputClaim ClaimTypeReferenceId="extension_mobilePhone" />
                         <!--Demo: Read AppFactor Azure Active Directory extension attributes -->
                         <OutputClaim ClaimTypeReferenceId="extension_StrongAuthenticationAppSecretKey" />
                         <OutputClaim ClaimTypeReferenceId="extension_StrongAuthenticationAppTimeStepMatched" />

@@ -24,8 +24,6 @@
                 <OutputClaim ClaimTypeReferenceId="surname" />
                 <OutputClaim ClaimTypeReferenceId="email" />
                 <OutputClaim ClaimTypeReferenceId="extension_isPhoneSet" />
-                <OutputClaim ClaimTypeReferenceId="extension_isTotpSet" />
-                <OutputClaim ClaimTypeReferenceId="extension_mfaByPhoneOrTotp" />
                 <OutputClaim ClaimTypeReferenceId="strongAuthenticationPhoneNumber" PartnerClaimType="mfaNumber" />
                 <OutputClaim ClaimTypeReferenceId="mobile" />
                 <OutputClaim ClaimTypeReferenceId="extension_mobilePhone" />
