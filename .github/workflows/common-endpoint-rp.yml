@@ -9,6 +9,7 @@ on:
     branches: [ main ]
     paths: 
     - 'policies/SocialAndLocalAccounts/**'
+    - '.github/workflows/common-endpoint.rp.yml'
   pull_request:
     branches: [ main ]
 
@@ -32,14 +33,13 @@ jobs:
         with:
           tokenPrefix: '{'
           tokenSuffix: '}'
-          files: '["./policies/SocialAndLocalAccounts/CommonEndpoint/*.xml", "./policies/SocialAndLocalAccounts/TermsOfUse/*.xml"]'
+          files: '["./policies/SocialAndLocalAccounts/CommonEndpoint/*.xml", "./policies/SocialAndLocalAccounts/TermsOfUse/*.xml", "./policies/SocialAndLocalAccounts/SelfAssertedTest/*.xml"]'
         env:
           Settings:Tenant: ${{ secrets.TENANT_ID }}
           Settings:AppInsightsKey: ${{ secrets.APPINSIGHTSKEY }}
           Settings:DeploymentMode: ${{ secrets.DEPLOYMENTMODE }}
           Settings:CurrentTermsOfUseVersion: ${{ secrets.CURRENTTERMSOFUSEVERSION }}
           
-
       - name: 'Upload TrustFrameworkBase Policy for Common Endpoint'
         uses: azure-ad-b2c/deploy-trustframework-policy@v5.3
         with:
@@ -55,6 +55,16 @@ jobs:
         with:
           folder: "./policies/SocialAndLocalAccounts/TermsOfUse"
           files: "01-BuildingBlocks.xml,05-ClaimsProviders.xml,10-UserJourneys.xml,RP-SUSI.xml"
+          tenant: ${{ secrets.TENANT_ID }}
+          clientId: ${{ secrets.SPN_CLIENTID }}
+          clientSecret: ${{ secrets.SPN_CLIENTPWD }}
+          verbose: false
+
+      - name: 'Upload TrustFrameworkBase Policy for Simple Self Asserted'
+        uses: azure-ad-b2c/deploy-trustframework-policy@v5.3
+        with:
+          folder: "./policies/SocialAndLocalAccounts/SelfAssertedTest"
+          files: "01-BuildingBlocks.xml,05-ClaimsProviders.xml,10-UserJourneys.xml,RP-Test.xml"
           tenant: ${{ secrets.TENANT_ID }}
           clientId: ${{ secrets.SPN_CLIENTID }}
           clientSecret: ${{ secrets.SPN_CLIENTPWD }}
