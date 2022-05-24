@@ -45,3 +45,4 @@ jobs:
           tenant: ${{ secrets.TENANT_ID }}
           clientId: ${{ secrets.SPN_CLIENTID }}
           clientSecret: ${{ secrets.SPN_CLIENTPWD }}
+          verbose: true
