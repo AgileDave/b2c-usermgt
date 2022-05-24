@@ -59,6 +59,7 @@
                 <DisplayName>Nonce for AAD</DisplayName>
                 <DataType>string</DataType>
                 <UserHelpText/>
+                <UserInputType>TextBox</UserInputType>
             </ClaimType>
         </ClaimsSchema>
 

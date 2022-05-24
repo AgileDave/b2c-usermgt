@@ -22,6 +22,7 @@
                     </Metadata>
                     <OutputClaims>
                         <OutputClaim ClaimTypeReferenceId="simpleClaim" Required="true" />
+                        <OutputClaim ClaimTypeReferenceId="someValue" DefaultValue="EMPTY" />
                         <OutputClaim ClaimTypeReferenceId="email" Required="true" />
                         <OutputClaim ClaimTypeReferenceId="authenticationSource" DefaultValue="localauth" AlwaysUseDefaultValue="true" />
                         <OutputClaim ClaimTypeReferenceId="displayName" Required="true"/>
@@ -40,7 +41,6 @@
                         <OutputClaim ClaimTypeReferenceId="mystate" DefaultValue="{OAUTH-KV:state}" AlwaysUseDefaultValue="true"/>
                         <OutputClaim ClaimTypeReferenceId="reduri" DefaultValue="{OIDC:RedirectUri}" AlwaysUseDefaultValue="true"/>
                         <OutputClaim ClaimTypeReferenceId="nonce" DefaultValue="{OIDC:Nonce}" AlwaysUseDefaultValue="true"/>
-                        <OutputClaim ClaimTypeReferenceId="someValue" DefaultValue="EMPTY" AlwaysUseDefaultValue="true" />
                     </OutputClaims>
                 </TechnicalProfile>
             </TechnicalProfiles>
