@@ -1,0 +1,838 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<TrustFrameworkPolicy xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06"
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" PolicySchemaVersion="0.3.0.0" TenantId="{Settings:Tenant}" PolicyId="B2C_1A_Brinkshome_Customer_SSO_TrustFrameworkExtensions" PublicPolicyUri="http://{Settings:Tenant}/B2C_1A_Brinkshome_Customer_SSO_TrustFrameworkExtensions">
+   <BasePolicy>
+      <TenantId>{Settings:Tenant}</TenantId>
+      <PolicyId>B2C_1A_Brinkshome_Customer_SSO_TrustFrameworkLocalization</PolicyId>
+   </BasePolicy>
+   <BuildingBlocks>
+      <ClaimsSchema>
+         <ClaimType Id="extension_customer_number_or_address_trouble_message">
+            <DisplayName>We're having trouble locating your account, let's try another way.</DisplayName>
+            <DataType>string</DataType>
+            <UserInputType>Paragraph</UserInputType>
+         </ClaimType>
+         <ClaimType Id="extension_customer_number_or_address">
+            <DisplayName>Let's try to verify you another way</DisplayName>
+            <DataType>string</DataType>
+            <UserInputType>RadioSingleSelect</UserInputType>
+            <Restriction>
+               <Enumeration Text="Address Verification" Value="home_number_last_name_codeword" SelectByDefault="true" />
+               <Enumeration Text="Customer Number Verification" Value="customer_number_codeword" SelectByDefault="false" />
+            </Restriction>
+         </ClaimType>
+         <ClaimType Id="extension_customer_number">
+            <DisplayName>Customer Number</DisplayName>
+            <DataType>string</DataType>
+         </ClaimType>
+         <ClaimType Id="input_customer_number">
+            <DisplayName>Customer Number</DisplayName>
+            <DataType>string</DataType>
+            <UserHelpText>Enter Customer Number</UserHelpText>
+            <UserInputType>TextBox</UserInputType>
+         </ClaimType>
+         <ClaimType Id="input_house_number">
+            <DisplayName>Street Number</DisplayName>
+            <DataType>string</DataType>
+            <UserHelpText>Enter Street Number</UserHelpText>
+            <UserInputType>TextBox</UserInputType>
+         </ClaimType>
+         <ClaimType Id="input_last_name_number">
+            <DisplayName>Last Name</DisplayName>
+            <DataType>string</DataType>
+            <UserHelpText>Enter Last Name</UserHelpText>
+            <UserInputType>TextBox</UserInputType>
+         </ClaimType>
+         <ClaimType Id="input_code_word">
+            <DisplayName>Code Word from your initial account setup.</DisplayName>
+            <DataType>string</DataType>
+            <UserHelpText>Enter Codeword</UserHelpText>
+            <UserInputType>TextBox</UserInputType>
+         </ClaimType>
+         <ClaimType Id="input_zip">
+            <DisplayName>Zip</DisplayName>
+            <DataType>string</DataType>
+            <UserHelpText>Enter Zip</UserHelpText>
+            <UserInputType>TextBox</UserInputType>
+         </ClaimType>
+         <ClaimType Id="isForgotPassword">
+            <DisplayName>isForgotPassword</DisplayName>
+            <DataType>boolean</DataType>
+            <AdminHelpText>Whether the user has clicked Forgot Password</AdminHelpText>
+         </ClaimType>
+         <ClaimType Id="tempUserIdForMFA">
+            <DisplayName>Temp UserId for MFA</DisplayName>
+            <DataType>string</DataType>
+         </ClaimType>
+         <ClaimType Id="userIdForMFA">
+            <DisplayName>UserId for MFA</DisplayName>
+            <DataType>string</DataType>
+         </ClaimType>
+         <ClaimType Id="mobile">
+            <DisplayName>Mobile Number</DisplayName>
+            <DataType>string</DataType>
+         </ClaimType>
+         <ClaimType Id="strongAuthenticationPhoneNumber">
+            <DisplayName>Phone Number</DisplayName>
+            <DataType>string</DataType>
+            <Mask Type="Simple">XXX-XXX-</Mask>
+            <UserHelpText>Your telephone number</UserHelpText>
+         </ClaimType>
+         <ClaimType Id="newPhoneNumberEntered">
+            <DisplayName>New Phone Number Entered</DisplayName>
+            <DataType>boolean</DataType>
+         </ClaimType>
+         <ClaimType Id="IsPhoneNumberRegistredNow">
+            <DisplayName>Phone Number Is Registred ON Signin or SignUp Process</DisplayName>
+            <DataType>string</DataType>
+         </ClaimType>
+         <ClaimType Id="countryCode">
+            <DisplayName>Country Code</DisplayName>
+            <DataType>string</DataType>
+         </ClaimType>
+
+         <ClaimType Id="readonlyEmail">
+            <DisplayName>E-mail Address</DisplayName>
+            <DataType>string</DataType>
+            <UserInputType>Readonly</UserInputType>
+         </ClaimType>
+
+      </ClaimsSchema>
+      <ClaimsTransformations>
+         <ClaimsTransformation Id="GetNationalNumberAndCountryCodeFromPhoneNumberString" TransformationMethod="GetNationalNumberAndCountryCodeFromPhoneNumberString">
+            <InputClaims>
+               <InputClaim ClaimTypeReferenceId="mobile" TransformationClaimType="phoneNumber" />
+            </InputClaims>
+            <InputParameters>
+               <InputParameter Id="throwExceptionOnFailure" DataType="boolean" Value="false" />
+               <InputParameter Id="countryCodeType" DataType="string" Value="ISO3166" />
+            </InputParameters>
+            <OutputClaims>
+               <OutputClaim ClaimTypeReferenceId="mobile" TransformationClaimType="nationalNumber" />
+               <OutputClaim ClaimTypeReferenceId="countryCode" TransformationClaimType="countryCode" />
+            </OutputClaims>
+         </ClaimsTransformation>
+
+         <ClaimsTransformation Id="CreateUserIdForMFA" TransformationMethod="CreateRandomString">
+            <InputParameters>
+               <InputParameter Id="randomGeneratorType" DataType="string" Value="GUID" />
+            </InputParameters>
+            <OutputClaims>
+               <OutputClaim ClaimTypeReferenceId="tempUserIdForMFA" TransformationClaimType="outputClaim" />
+            </OutputClaims>
+         </ClaimsTransformation>
+
+         <ClaimsTransformation Id="CreateCustomUserIdForMFA" TransformationMethod="FormatStringClaim">
+            <InputClaims>
+               <InputClaim ClaimTypeReferenceId="tempUserIdForMFA" TransformationClaimType="inputClaim" />
+            </InputClaims>
+            <InputParameters>
+               <InputParameter Id="stringFormat" DataType="string" Value="{0}@{RelyingPartyTenantId}" />
+            </InputParameters>
+            <OutputClaims>
+               <OutputClaim ClaimTypeReferenceId="userIdForMFA" TransformationClaimType="outputClaim" />
+            </OutputClaims>
+         </ClaimsTransformation>
+
+
+         <ClaimsTransformation Id="CreateReadonlyEmailClaim" TransformationMethod="FormatStringClaim">
+            <InputClaims>
+               <InputClaim ClaimTypeReferenceId="email" TransformationClaimType="inputClaim" />
+            </InputClaims>
+            <InputParameters>
+               <InputParameter Id="stringFormat" DataType="string" Value="{0}" />
+            </InputParameters>
+            <OutputClaims>
+               <OutputClaim ClaimTypeReferenceId="readonlyEmail" TransformationClaimType="outputClaim" />
+            </OutputClaims>
+         </ClaimsTransformation>
+         <ClaimsTransformation Id="CreateRandomUPNUserName" TransformationMethod="CreateRandomString">
+            <InputParameters>
+               <InputParameter Id="randomGeneratorType" DataType="string" Value="GUID" />
+            </InputParameters>
+            <OutputClaims>
+               <OutputClaim ClaimTypeReferenceId="upnUserName" TransformationClaimType="outputClaim" />
+            </OutputClaims>
+         </ClaimsTransformation>
+
+      </ClaimsTransformations>
+   </BuildingBlocks>
+   <ClaimsProviders>
+      <ClaimsProvider>
+         <DisplayName>Local Account</DisplayName>
+         <TechnicalProfiles>
+            <TechnicalProfile Id="ForgotPassword">
+               <DisplayName>Forgot your password?</DisplayName>
+               <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ClaimsTransformationProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+               <OutputClaims>
+                  <OutputClaim ClaimTypeReferenceId="isForgotPassword" DefaultValue="true" AlwaysUseDefaultValue="true" />
+               </OutputClaims>
+            </TechnicalProfile>
+            <TechnicalProfile Id="SelfAsserted-LocalAccountSignin-Email">
+               <Metadata>
+                  <Item Key="setting.forgotPasswordLinkOverride">ForgotPasswordExchange</Item>
+                  <Item Key="setting.enableRememberMe">True</Item>
+               </Metadata>
+               <ValidationTechnicalProfiles>
+                  <!-- <ValidationTechnicalProfile ReferenceId="REST-Migrate" ContinueOnError="false" /> -->
+                  <ValidationTechnicalProfile ReferenceId="login-NonInteractive" />
+               </ValidationTechnicalProfiles>
+            </TechnicalProfile>
+         </TechnicalProfiles>
+      </ClaimsProvider>
+      <ClaimsProvider>
+         <DisplayName>Local Account SignIn</DisplayName>
+         <TechnicalProfiles>
+            <TechnicalProfile Id="login-NonInteractive">
+               <Metadata>
+                  <!-- setup idenentify framework https://docs.microsoft.com/en-us/azure/active-directory-b2c/tutorial-create-user-flows?pivots=b2c-custom-policy -->
+                  <!-- idenentify framework proxy app, see qa.proxy.idf.brinkshome.com-->
+                  <Item Key="client_id">{Settings:ProxyIdentityExperienceFrameworkAppId}</Item>
+                  <!-- idenentify framework app, see qa.idf.brinkshome.com-->
+                  <Item Key="IdTokenAudience">{Settings:IdentityExperienceFrameworkAppId}</Item>
+               </Metadata>
+               <InputClaims>
+                  <!-- idenentify framework proxy app, see qa.proxy.idf.brinkshome.com-->
+                  <InputClaim ClaimTypeReferenceId="client_id" DefaultValue="{Settings:ProxyIdentityExperienceFrameworkAppId}" />
+                  <!-- idenentify framework app, see qa.idf.brinkshome.com-->
+                  <InputClaim ClaimTypeReferenceId="resource_id" PartnerClaimType="resource" DefaultValue="{Settings:IdentityExperienceFrameworkAppId}" />
+               </InputClaims>
+            </TechnicalProfile>
+         </TechnicalProfiles>
+      </ClaimsProvider>
+      <ClaimsProvider>
+         <DisplayName>Azure Active Directory</DisplayName>
+         <TechnicalProfiles>
+
+            <TechnicalProfile Id="EmailVerification">
+               <DisplayName>Initiate Email Address Verification For Local Account</DisplayName>
+               <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+               <Metadata>
+                  <Item Key="ContentDefinitionReferenceId">api.localaccount.emailVerification</Item>
+                  <Item Key="language.button_continue">Continue</Item>
+                  <Item Key="setting.showCancelButton">false</Item>
+               </Metadata>
+               <OutputClaims>
+                  <OutputClaim ClaimTypeReferenceId="email" PartnerClaimType="Verified.Email" Required="true" />
+               </OutputClaims>
+               <ValidationTechnicalProfiles>
+                  <ValidationTechnicalProfile ReferenceId="REST-Raise-Error-If-Email-Exist" ContinueOnError="false" />
+               </ValidationTechnicalProfiles>
+            </TechnicalProfile>
+
+            <TechnicalProfile Id="LocalAccountSignUpWithLogonEmail-ReadOnly">
+               <DisplayName>Email signup</DisplayName>
+               <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+               <Metadata>
+                  <Item Key="IpAddressClaimReferenceId">IpAddress</Item>
+                  <Item Key="ContentDefinitionReferenceId">api.localaccountsignup</Item>
+                  <Item Key="setting.showCancelButton">false</Item>
+                  <Item Key="EnforceEmailVerification">False</Item>
+               </Metadata>
+               <CryptographicKeys>
+                  <Key Id="issuer_secret" StorageReferenceId="{Settings:TokenSigningKeyName}" />
+               </CryptographicKeys>
+               <InputClaimsTransformations>
+                  <InputClaimsTransformation ReferenceId="CreateReadonlyEmailClaim" />
+               </InputClaimsTransformations>
+               <InputClaims>
+                  <InputClaim ClaimTypeReferenceId="readOnlyEmail" />
+               </InputClaims>
+               <OutputClaims>
+                  <OutputClaim ClaimTypeReferenceId="objectId" />
+                  <OutputClaim ClaimTypeReferenceId="readOnlyEmail" PartnerClaimType="Verified.Email" Required="true" />
+                  <!-- Optional claims, to be collected from the user -->
+                  <OutputClaim ClaimTypeReferenceId="givenName" />
+                  <OutputClaim ClaimTypeReferenceId="surName" />
+                  <OutputClaim ClaimTypeReferenceId="displayName" />
+                  <!-- Optional claims, to be collected from the user -->
+                  <OutputClaim ClaimTypeReferenceId="newPassword" Required="true" />
+                  <OutputClaim ClaimTypeReferenceId="reenterPassword" Required="true" />
+                  <OutputClaim ClaimTypeReferenceId="executed-SelfAsserted-Input" DefaultValue="true" />
+                  <OutputClaim ClaimTypeReferenceId="authenticationSource" />
+                  <OutputClaim ClaimTypeReferenceId="newUser" />
+               </OutputClaims>
+               <ValidationTechnicalProfiles>
+                  <ValidationTechnicalProfile ReferenceId="AAD-UserWriteUsingLogonEmail" />
+               </ValidationTechnicalProfiles>
+               <UseTechnicalProfileForSessionManagement ReferenceId="SM-AAD" />
+            </TechnicalProfile>
+
+            <TechnicalProfile Id="AAD-Common">
+               <Metadata>
+                  <!-- b2c-extensions-app -->
+                  <!-- if not present follow : https://docs.microsoft.com/en-us/azure/active-directory-b2c/extensions-app -->
+                  <!-- https://docs.microsoft.com/en-us/azure/active-directory-b2c/user-flow-custom-attributes?pivots=b2c-custom-policy -->
+                  <Item Key="ClientId">{Settings:ExtAppId}</Item>
+                  <Item Key="ApplicationObjectId">{Settings:ExtObjId}</Item>
+               </Metadata>
+            </TechnicalProfile>
+
+            <TechnicalProfile Id="AAD-UserReadUsingObjectId">
+               <Metadata>
+                  <Item Key="Operation">Read</Item>
+                  <Item Key="RaiseErrorIfClaimsPrincipalDoesNotExist">true</Item>
+               </Metadata>
+               <IncludeInSso>false</IncludeInSso>
+               <InputClaims>
+                  <InputClaim ClaimTypeReferenceId="objectId" Required="true" />
+               </InputClaims>
+               <OutputClaims>
+                  <!-- Required claims -->
+                  <OutputClaim ClaimTypeReferenceId="signInNames.emailAddress" />
+                  <!-- Optional claims -->
+                  <OutputClaim ClaimTypeReferenceId="displayName" />
+                  <OutputClaim ClaimTypeReferenceId="otherMails" />
+                  <OutputClaim ClaimTypeReferenceId="givenName" />
+                  <OutputClaim ClaimTypeReferenceId="surname" />
+                  <OutputClaim ClaimTypeReferenceId="IsPhoneNumberRegistredNow" AlwaysUseDefaultValue="true" DefaultValue="false" />
+                  <OutputClaim ClaimTypeReferenceId="mobile" />
+               </OutputClaims>
+               <IncludeTechnicalProfile ReferenceId="AAD-Common" />
+            </TechnicalProfile>
+         </TechnicalProfiles>
+      </ClaimsProvider>
+      <ClaimsProvider>
+         <DisplayName>Session Management</DisplayName>
+         <TechnicalProfiles>
+            <TechnicalProfile Id="SM-MFA">
+               <DisplayName>Session Mananagement Provider</DisplayName>
+               <Protocol Name="Proprietary" Handler="Web.TPEngine.SSO.DefaultSSOSessionProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+               <PersistedClaims>
+                  <PersistedClaim ClaimTypeReferenceId="mobile" />
+               </PersistedClaims>
+               <OutputClaims>
+                  <OutputClaim ClaimTypeReferenceId="isActiveMFASession" DefaultValue="true" />
+                  <OutputClaim ClaimTypeReferenceId="mobile" />
+               </OutputClaims>
+            </TechnicalProfile>
+         </TechnicalProfiles>
+      </ClaimsProvider>
+      <ClaimsProvider>
+         <DisplayName>Self Asserted</DisplayName>
+         <TechnicalProfiles>
+            <TechnicalProfile Id="SelfAsserted-Select-Registration-Method">
+               <DisplayName>Allow user to choose their Registration Method</DisplayName>
+               <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+               <Metadata>
+                  <Item Key="ContentDefinitionReferenceId">api.selfasserted.accountverification</Item>
+                  <Item Key="setting.showCancelButton">false</Item>
+               </Metadata>
+               <OutputClaims>
+                  <OutputClaim ClaimTypeReferenceId="extension_customer_number_or_address_trouble_message" />
+                  <OutputClaim ClaimTypeReferenceId="extension_customer_number_or_address" Required="true" />
+               </OutputClaims>
+            </TechnicalProfile>
+            <TechnicalProfile Id="AAD-UserWritePhoneNumberUsingObjectId">
+               <Metadata>
+                  <Item Key="Operation">Write</Item>
+                  <Item Key="RaiseErrorIfClaimsPrincipalAlreadyExists">false</Item>
+                  <Item Key="RaiseErrorIfClaimsPrincipalDoesNotExist">true</Item>
+               </Metadata>
+               <IncludeInSso>false</IncludeInSso>
+               <InputClaims>
+                  <InputClaim ClaimTypeReferenceId="objectId" Required="true" />
+               </InputClaims>
+               <PersistedClaims>
+                  <PersistedClaim ClaimTypeReferenceId="objectId" />
+                  <PersistedClaim ClaimTypeReferenceId="mobile" PartnerClaimType="mobile" />
+               </PersistedClaims>
+               <IncludeTechnicalProfile ReferenceId="AAD-Common" />
+            </TechnicalProfile>
+         </TechnicalProfiles>
+      </ClaimsProvider>
+      <ClaimsProvider>
+         <DisplayName>PhoneFactor</DisplayName>
+         <TechnicalProfiles>
+            <TechnicalProfile Id="PhoneFactor-InputOrVerify">
+               <DisplayName>PhoneFactor</DisplayName>
+               <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.PhoneFactorProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+               <Metadata>
+                  <Item Key="ContentDefinitionReferenceId">api.phonefactor</Item>
+                  <Item Key="ManualPhoneNumberEntryAllowed">true</Item>
+                  <Item Key="setting.showCancelButton">false</Item>
+                  <Item Key="language.countryList">
+                     <![CDATA[{"US": "United States","ES": "Spain", "IN": "India"}]]>
+                  </Item>
+                  <!-- SMS Only <Item Key="setting.authenticationMode">sms</Item> -->
+               </Metadata>
+               <CryptographicKeys>
+                  <Key Id="issuer_secret" StorageReferenceId="{Settings:TokenSigningKeyName}" />
+               </CryptographicKeys>
+               <InputClaimsTransformations>
+                  <InputClaimsTransformation ReferenceId="CreateRandomUPNUserName" />
+                  <InputClaimsTransformation ReferenceId="CreateUserIdForMFA" />
+                  <InputClaimsTransformation ReferenceId="CreateCustomUserIdForMFA" />
+               </InputClaimsTransformations>
+               <InputClaims>
+                  <InputClaim ClaimTypeReferenceId="userIdForMFA" PartnerClaimType="UserId" />
+                  <InputClaim ClaimTypeReferenceId="strongAuthenticationPhoneNumber" />
+               </InputClaims>
+               <OutputClaims>
+                  <OutputClaim ClaimTypeReferenceId="mobile" PartnerClaimType="Verified.OfficePhone" />
+                  <OutputClaim ClaimTypeReferenceId="newPhoneNumberEntered" PartnerClaimType="newPhoneNumberEntered" />
+                  <OutputClaim ClaimTypeReferenceId="IsPhoneNumberRegistredNow" AlwaysUseDefaultValue="true" DefaultValue="true" />
+               </OutputClaims>
+               <OutputClaimsTransformations>
+                  <OutputClaimsTransformation ReferenceId="GetNationalNumberAndCountryCodeFromPhoneNumberString" />
+               </OutputClaimsTransformations>
+               <UseTechnicalProfileForSessionManagement ReferenceId="SM-MFA" />
+            </TechnicalProfile>
+         </TechnicalProfiles>
+      </ClaimsProvider>
+      <ClaimsProvider>
+         <DisplayName>Extended Customer Number By Codeword and Address</DisplayName>
+         <TechnicalProfiles>
+            <TechnicalProfile Id="SelfAsserted-ProfileUpdate-By-Customer-Number-Codeword">
+               <DisplayName>Customer Number And Codeword</DisplayName>
+               <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+               <Metadata>
+                  <Item Key="ContentDefinitionReferenceId">api.selfasserted.accountverification.customernumber</Item>
+                  <Item Key="setting.showCancelButton">false</Item>
+               </Metadata>
+               <IncludeInSso>false</IncludeInSso>
+               <InputClaims>
+                  <InputClaim ClaimTypeReferenceId="userPrincipalName" />
+                  <InputClaim ClaimTypeReferenceId="input_customer_number" />
+                  <InputClaim ClaimTypeReferenceId="input_code_word" />
+               </InputClaims>
+               <OutputClaims>
+                  <OutputClaim ClaimTypeReferenceId="executed-SelfAsserted-Input" DefaultValue="true" />
+                  <OutputClaim ClaimTypeReferenceId="input_customer_number" Required="true" />
+                  <OutputClaim ClaimTypeReferenceId="input_code_word" Required="true" />
+                  <OutputClaim ClaimTypeReferenceId="extension_customer_number" PartnerClaimType="extension_customer_number" Required="true" />
+               </OutputClaims>
+               <ValidationTechnicalProfiles>
+                  <ValidationTechnicalProfile ReferenceId="REST-SelfAsserted-ProfileUpdate-By-Customer-Number-Codeword" />
+               </ValidationTechnicalProfiles>
+            </TechnicalProfile>
+            <TechnicalProfile Id="SelfAsserted-ProfileUpdate-By-House-Number-LastName-Codeword">
+               <DisplayName>House Number, Last Name And Codeword</DisplayName>
+               <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+               <Metadata>
+                  <Item Key="ContentDefinitionReferenceId">api.selfasserted.accountverification.address</Item>
+                  <Item Key="setting.showCancelButton">false</Item>
+               </Metadata>
+               <IncludeInSso>false</IncludeInSso>
+               <InputClaims>
+                  <InputClaim ClaimTypeReferenceId="userPrincipalName" />
+                  <InputClaim ClaimTypeReferenceId="input_house_number" />
+                  <InputClaim ClaimTypeReferenceId="input_zip" />
+                  <InputClaim ClaimTypeReferenceId="surname" />
+                  <InputClaim ClaimTypeReferenceId="input_code_word" />
+               </InputClaims>
+               <OutputClaims>
+                  <OutputClaim ClaimTypeReferenceId="executed-SelfAsserted-Input" DefaultValue="true" />
+                  <OutputClaim ClaimTypeReferenceId="input_house_number" Required="true" />
+                  <OutputClaim ClaimTypeReferenceId="input_zip" Required="true" />
+                  <OutputClaim ClaimTypeReferenceId="surname" Required="true" />
+                  <OutputClaim ClaimTypeReferenceId="input_code_word" Required="true" />
+                  <OutputClaim ClaimTypeReferenceId="extension_customer_number" PartnerClaimType="extension_customer_number" Required="true" />
+               </OutputClaims>
+               <ValidationTechnicalProfiles>
+                  <ValidationTechnicalProfile ReferenceId="REST-SelfAsserted-ProfileUpdate-By-Address" />
+               </ValidationTechnicalProfiles>
+            </TechnicalProfile>
+         </TechnicalProfiles>
+      </ClaimsProvider>
+      <ClaimsProvider>
+         <DisplayName>REST Service</DisplayName>
+         <TechnicalProfiles>
+
+            <TechnicalProfile Id="REST-Raise-Error-If-Email-Exist">
+               <DisplayName>Register Email</DisplayName>
+               <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+               <Metadata>
+                  <Item Key="ServiceUrl">https://airlift.kubedave.com</Item>
+                  <Item Key="AuthenticationType">None</Item>
+                  <Item Key="SendClaimsIn">Url</Item>
+                  <Item Key="setting.retryLimit">3</Item>
+                  <Item Key="DebugMode">true</Item>
+                  <Item Key="AllowInsecureAuthInProduction">true</Item>
+               </Metadata>
+               <!-- <CryptographicKeys>
+                  <Key Id="BasicAuthenticationUsername" StorageReferenceId="B2C_1A_AISConnectorUserName" />
+                  <Key Id="BasicAuthenticationPassword" StorageReferenceId="B2C_1A_AISConnectorPassword" />
+               </CryptographicKeys> -->
+               <InputClaims>
+                  <InputClaim ClaimTypeReferenceId="email" PartnerClaimType="email" />
+               </InputClaims>
+            </TechnicalProfile>
+
+            <TechnicalProfile Id="REST-SelfAsserted-ProfileUpdate-By-Email">
+               <DisplayName>Register Email</DisplayName>
+               <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+               <Metadata>
+                  <Item Key="ServiceUrl">https://ei-apim-01-sit.azure-api.net/b2c-connector/b2c/register/email</Item>
+                  <Item Key="AuthenticationType">None</Item>
+                  <Item Key="SendClaimsIn">Body</Item>
+                  <Item Key="setting.retryLimit">3</Item>
+                  <Item Key="DebugMode">true</Item>
+                  <Item Key="AllowInsecureAuthInProduction">true</Item>
+               </Metadata>
+               <!-- <CryptographicKeys>
+                  <Key Id="BasicAuthenticationUsername" StorageReferenceId="B2C_1A_AISConnectorUserName" />
+                  <Key Id="BasicAuthenticationPassword" StorageReferenceId="B2C_1A_AISConnectorPassword" />
+               </CryptographicKeys> -->
+               <InputClaims>
+                  <InputClaim ClaimTypeReferenceId="client_id" PartnerClaimType="client_id" DefaultValue="{OIDC:ClientId}" />
+                  <InputClaim ClaimTypeReferenceId="email" PartnerClaimType="email" />
+               </InputClaims>
+               <OutputClaims>
+                  <OutputClaim ClaimTypeReferenceId="extension_customer_number" PartnerClaimType="extension_customer_number" />
+                  <OutputClaim ClaimTypeReferenceId="mobile" PartnerClaimType="extension_phone_number" />
+               </OutputClaims>
+            </TechnicalProfile>
+            <TechnicalProfile Id="REST-SelfAsserted-ProfileUpdate-By-Phone-Number">
+               <DisplayName>Register Phone Number</DisplayName>
+               <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+               <Metadata>
+                  <Item Key="ServiceUrl">https://ei-apim-01-sit.azure-api.net/b2c-connector/b2c/register/phone</Item>
+                  <Item Key="AuthenticationType">None</Item>
+                  <Item Key="SendClaimsIn">Body</Item>
+                  <Item Key="setting.retryLimit">3</Item>
+                  <Item Key="DebugMode">true</Item>
+                  <Item Key="AllowInsecureAuthInProduction">true</Item>
+               </Metadata>
+               <!-- <CryptographicKeys>
+                  <Key Id="BasicAuthenticationUsername" StorageReferenceId="B2C_1A_AISConnectorUserName" />
+                  <Key Id="BasicAuthenticationPassword" StorageReferenceId="B2C_1A_AISConnectorPassword" />
+               </CryptographicKeys> -->
+               <InputClaims>
+                  <InputClaim ClaimTypeReferenceId="client_id" PartnerClaimType="client_id" DefaultValue="{OIDC:ClientId}" />
+                  <InputClaim ClaimTypeReferenceId="signInNames.emailAddress" PartnerClaimType="email" />
+                  <InputClaim ClaimTypeReferenceId="mobile" PartnerClaimType="phoneNumber" />
+               </InputClaims>
+               <OutputClaims>
+                  <OutputClaim ClaimTypeReferenceId="extension_customer_number" PartnerClaimType="extension_customer_number" />
+               </OutputClaims>
+            </TechnicalProfile>
+            <TechnicalProfile Id="REST-SelfAsserted-ProfileUpdate-By-Customer-Number-Codeword">
+               <DisplayName>Validate Customer Number And Codeword</DisplayName>
+               <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+               <Metadata>
+                  <Item Key="ServiceUrl">https://ei-apim-01-sit.azure-api.net/b2c-connector/b2c/register/customercodeword</Item>
+                  <Item Key="AuthenticationType">None</Item>
+                  <Item Key="SendClaimsIn">Body</Item>
+                  <Item Key="DebugMode">true</Item>
+                  <Item Key="AllowInsecureAuthInProduction">true</Item>
+               </Metadata>
+               <!-- <CryptographicKeys>
+                  <Key Id="BasicAuthenticationUsername" StorageReferenceId="B2C_1A_AISConnectorUserName" />
+                  <Key Id="BasicAuthenticationPassword" StorageReferenceId="B2C_1A_AISConnectorPassword" />
+               </CryptographicKeys> -->
+               <InputClaims>
+                  <InputClaim ClaimTypeReferenceId="client_id" PartnerClaimType="client_id" DefaultValue="{OIDC:ClientId}" />
+                  <InputClaim ClaimTypeReferenceId="signInNames.emailAddress" PartnerClaimType="email" />
+                  <InputClaim ClaimTypeReferenceId="mobile" PartnerClaimType="phoneNumber" />
+                  <InputClaim ClaimTypeReferenceId="input_customer_number" PartnerClaimType="customerNumber" />
+                  <InputClaim ClaimTypeReferenceId="input_code_word" PartnerClaimType="codeword" />
+               </InputClaims>
+               <OutputClaims>
+                  <OutputClaim ClaimTypeReferenceId="extension_customer_number" PartnerClaimType="extension_customer_number" Required="true" />
+               </OutputClaims>
+            </TechnicalProfile>
+            <TechnicalProfile Id="REST-SelfAsserted-ProfileUpdate-By-Address">
+               <DisplayName>Validate Customer Number And Codeword</DisplayName>
+               <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+               <Metadata>
+                  <Item Key="ServiceUrl">https://ei-apim-01-sit.azure-api.net/b2c-connector/b2c/register/address</Item>
+                  <Item Key="AuthenticationType">None</Item>
+                  <Item Key="SendClaimsIn">Body</Item>
+                  <Item Key="DebugMode">true</Item>
+                  <Item Key="AllowInsecureAuthInProduction">true</Item>
+               </Metadata>
+               <!-- <CryptographicKeys>
+                  <Key Id="BasicAuthenticationUsername" StorageReferenceId="B2C_1A_AISConnectorUserName" />
+                  <Key Id="BasicAuthenticationPassword" StorageReferenceId="B2C_1A_AISConnectorPassword" />
+               </CryptographicKeys> -->
+               <InputClaims>
+                  <InputClaim ClaimTypeReferenceId="client_id" PartnerClaimType="client_id" DefaultValue="{OIDC:ClientId}" />
+                  <InputClaim ClaimTypeReferenceId="signInNames.emailAddress" PartnerClaimType="email" />
+                  <InputClaim ClaimTypeReferenceId="mobile" PartnerClaimType="phoneNumber" />
+                  <InputClaim ClaimTypeReferenceId="input_code_word" PartnerClaimType="codeword" />
+                  <InputClaim ClaimTypeReferenceId="input_house_number" PartnerClaimType="house" />
+                  <InputClaim ClaimTypeReferenceId="input_zip" PartnerClaimType="zip" />
+                  <InputClaim ClaimTypeReferenceId="surname" PartnerClaimType="lastName" />
+               </InputClaims>
+               <OutputClaims>
+                  <OutputClaim ClaimTypeReferenceId="extension_customer_number" PartnerClaimType="extension_customer_number" Required="true" />
+               </OutputClaims>
+            </TechnicalProfile>
+            <TechnicalProfile Id="REST-Get-Tokens">
+               <DisplayName>Get Tokens</DisplayName>
+               <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+               <Metadata>
+                  <Item Key="ServiceUrl">https://ei-apim-01-sit.azure-api.net/b2c-connector/b2c/token</Item>
+                  <Item Key="AuthenticationType">None</Item>
+                  <Item Key="SendClaimsIn">Body</Item>
+                  <Item Key="setting.retryLimit">3</Item>
+                  <Item Key="DebugMode">true</Item>
+                  <Item Key="AllowInsecureAuthInProduction">true</Item>
+               </Metadata>
+               <!-- <CryptographicKeys>
+                  <Key Id="BasicAuthenticationUsername" StorageReferenceId="B2C_1A_AISConnectorUserName" />
+                  <Key Id="BasicAuthenticationPassword" StorageReferenceId="B2C_1A_AISConnectorPassword" />
+               </CryptographicKeys> -->
+               <InputClaims>
+                  <InputClaim ClaimTypeReferenceId="client_id" PartnerClaimType="client_id" DefaultValue="{OIDC:ClientId}" />
+                  <InputClaim ClaimTypeReferenceId="signInNames.emailAddress" PartnerClaimType="email" />
+                  <InputClaim ClaimTypeReferenceId="objectId" PartnerClaimType="objectId" DefaultValue="{Claim:objectId}" />
+               </InputClaims>
+               <OutputClaims>
+                  <OutputClaim ClaimTypeReferenceId="extension_customer_number" />
+               </OutputClaims>
+            </TechnicalProfile>
+            <TechnicalProfile Id="REST-Migrate">
+               <DisplayName>Migrate user sign-in flow</DisplayName>
+               <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+               <Metadata>
+                  <Item Key="ServiceUrl">https://ei-apim-01-sit.azure-api.net/b2c-connector/usermigration/migrate</Item>
+                  <Item Key="AuthenticationType">None</Item>
+                  <Item Key="SendClaimsIn">Body</Item>
+                  <Item Key="setting.retryLimit">3</Item>
+                  <Item Key="DebugMode">true</Item>
+                  <Item Key="AllowInsecureAuthInProduction">true</Item>
+               </Metadata>
+               <!-- <CryptographicKeys>
+                  <Key Id="BasicAuthenticationUsername" StorageReferenceId="B2C_1A_AISConnectorUserName" />
+                  <Key Id="BasicAuthenticationPassword" StorageReferenceId="B2C_1A_AISConnectorPassword" />
+               </CryptographicKeys> -->
+               <InputClaims>
+                  <InputClaim ClaimTypeReferenceId="email" PartnerClaimType="email" />
+                  <InputClaim ClaimTypeReferenceId="password" />
+               </InputClaims>
+            </TechnicalProfile>
+         </TechnicalProfiles>
+      </ClaimsProvider>
+   </ClaimsProviders>
+   <UserJourneys>
+      <UserJourney Id="SignUpOrSignIn">
+         <OrchestrationSteps>
+            <OrchestrationStep Order="1" Type="CombinedSignInAndSignUp" ContentDefinitionReferenceId="api.signuporsigninwithpasswordreset">
+               <ClaimsProviderSelections>
+                  <ClaimsProviderSelection ValidationClaimsExchangeId="LocalAccountSigninEmailExchange" />
+                  <ClaimsProviderSelection TargetClaimsExchangeId="ForgotPasswordExchange" />
+               </ClaimsProviderSelections>
+               <ClaimsExchanges>
+                  <ClaimsExchange Id="LocalAccountSigninEmailExchange" TechnicalProfileReferenceId="SelfAsserted-LocalAccountSignin-Email" />
+               </ClaimsExchanges>
+            </OrchestrationStep>
+
+            <OrchestrationStep Order="2" Type="ClaimsExchange">
+               <Preconditions>
+                  <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+                     <Value>objectId</Value>
+                     <Action>SkipThisOrchestrationStep</Action>
+                  </Precondition>
+               </Preconditions>
+               <ClaimsExchanges>
+                  <ClaimsExchange Id="SignUpWithLogonEmailExchange" TechnicalProfileReferenceId="EmailVerification" />
+                  <ClaimsExchange Id="ForgotPasswordExchange" TechnicalProfileReferenceId="ForgotPassword" />
+               </ClaimsExchanges>
+            </OrchestrationStep>
+
+            <OrchestrationStep Order="3" Type="InvokeSubJourney">
+               <Preconditions>
+                  <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+                     <Value>isForgotPassword</Value>
+                     <Action>SkipThisOrchestrationStep</Action>
+                  </Precondition>
+               </Preconditions>
+               <JourneyList>
+                  <Candidate SubJourneyReferenceId="PasswordReset" />
+               </JourneyList>
+            </OrchestrationStep>
+
+            <OrchestrationStep Order="4" Type="InvokeSubJourney">
+               <Preconditions>
+                  <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+                     <Value>objectId</Value>
+                     <Action>SkipThisOrchestrationStep</Action>
+                  </Precondition>
+               </Preconditions>
+               <JourneyList>
+                  <Candidate SubJourneyReferenceId="SignUpSubJourney" />
+               </JourneyList>
+            </OrchestrationStep>
+
+            <OrchestrationStep Order="5" Type="ClaimsExchange">
+               <ClaimsExchanges>
+                  <ClaimsExchange Id="AADUserReadWithObjectId" TechnicalProfileReferenceId="AAD-UserReadUsingObjectId" />
+               </ClaimsExchanges>
+            </OrchestrationStep>
+
+            <OrchestrationStep Order="6" Type="ClaimsExchange">
+               <ClaimsExchanges>
+                  <ClaimsExchange Id="GetCustomerNumberAndPhoneNumber" TechnicalProfileReferenceId="REST-Get-Tokens" />
+               </ClaimsExchanges>
+            </OrchestrationStep>
+
+            <OrchestrationStep Order="7" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+
+         </OrchestrationSteps>
+         <ClientDefinition ReferenceId="DefaultWeb" />
+      </UserJourney>
+
+      <UserJourney Id="ProfileEdit">
+         <OrchestrationSteps>
+            <OrchestrationStep Order="1" Type="ClaimsProviderSelection" ContentDefinitionReferenceId="api.idpselections">
+               <ClaimsProviderSelections>
+                  <ClaimsProviderSelection TargetClaimsExchangeId="LocalAccountSigninEmailExchange" />
+               </ClaimsProviderSelections>
+            </OrchestrationStep>
+            <OrchestrationStep Order="2" Type="ClaimsExchange">
+               <ClaimsExchanges>
+                  <ClaimsExchange Id="LocalAccountSigninEmailExchange" TechnicalProfileReferenceId="SelfAsserted-LocalAccountSignin-Email" />
+               </ClaimsExchanges>
+            </OrchestrationStep>
+            <OrchestrationStep Order="3" Type="ClaimsExchange">
+               <ClaimsExchanges>
+                  <ClaimsExchange Id="AADUserReadWithObjectId" TechnicalProfileReferenceId="AAD-UserReadUsingObjectId" />
+               </ClaimsExchanges>
+            </OrchestrationStep>
+            <OrchestrationStep Order="4" Type="ClaimsExchange">
+               <ClaimsExchanges>
+                  <ClaimsExchange Id="B2CUserProfileUpdateExchange" TechnicalProfileReferenceId="SelfAsserted-ProfileUpdate" />
+               </ClaimsExchanges>
+            </OrchestrationStep>
+            <OrchestrationStep Order="5" Type="ClaimsExchange">
+               <ClaimsExchanges>
+                  <ClaimsExchange Id="GetCustomerNumberAndPhoneNumber" TechnicalProfileReferenceId="REST-Get-Tokens" />
+               </ClaimsExchanges>
+            </OrchestrationStep>
+            <OrchestrationStep Order="6" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+         </OrchestrationSteps>
+         <ClientDefinition ReferenceId="DefaultWeb" />
+      </UserJourney>
+
+   </UserJourneys>
+   <SubJourneys>
+
+      <SubJourney Id="SignUpSubJourney" Type="Call">
+         <OrchestrationSteps>
+
+            <OrchestrationStep Order="1" Type="InvokeSubJourney">
+               <Preconditions>
+                  <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+                     <Value>mobile</Value>
+                     <Action>SkipThisOrchestrationStep</Action>
+                  </Precondition>
+               </Preconditions>
+               <JourneyList>
+                  <Candidate SubJourneyReferenceId="PhoneRegistrationSubJourney" />
+               </JourneyList>
+            </OrchestrationStep>
+
+            <OrchestrationStep Order="2" Type="InvokeSubJourney">
+               <Preconditions>
+                  <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+                     <Value>extension_customer_number</Value>
+                     <Action>SkipThisOrchestrationStep</Action>
+                  </Precondition>
+               </Preconditions>
+               <JourneyList>
+                  <Candidate SubJourneyReferenceId="OtherRegistrationMethod" />
+               </JourneyList>
+            </OrchestrationStep>
+
+            <OrchestrationStep Order="3" Type="ClaimsExchange">
+               <ClaimsExchanges>
+                  <ClaimsExchange Id="SignUpWithLogonEmailExchange_WithReadOnlyEmail" TechnicalProfileReferenceId="LocalAccountSignUpWithLogonEmail-ReadOnly" />
+               </ClaimsExchanges>
+            </OrchestrationStep>
+         </OrchestrationSteps>
+      </SubJourney>
+
+      <SubJourney Id="PhoneRegistrationSubJourney" Type="Call">
+         <OrchestrationSteps>
+            <OrchestrationStep Order="1" Type="ClaimsExchange">
+               <ClaimsExchanges>
+                  <ClaimsExchange Id="PhoneFactor-Verify" TechnicalProfileReferenceId="PhoneFactor-InputOrVerify" />
+               </ClaimsExchanges>
+            </OrchestrationStep>
+
+            <OrchestrationStep Order="2" Type="ClaimsExchange">
+               <Preconditions>
+                  <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+                     <Value>IsPhoneNumberRegistredNow</Value>
+                     <Value>false</Value>
+                     <Action>SkipThisOrchestrationStep</Action>
+                  </Precondition>
+               </Preconditions>
+               <ClaimsExchanges>
+                  <ClaimsExchange Id="REST-Register-PhoneNumber" TechnicalProfileReferenceId="REST-SelfAsserted-ProfileUpdate-By-Phone-Number" />
+               </ClaimsExchanges>
+            </OrchestrationStep>
+
+            <OrchestrationStep Order="3" Type="ClaimsExchange">
+               <Preconditions>
+                  <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+                     <Value>newPhoneNumberEntered</Value>
+                     <Action>SkipThisOrchestrationStep</Action>
+                  </Precondition>
+               </Preconditions>
+               <ClaimsExchanges>
+                  <ClaimsExchange Id="AADUserWriteWithObjectId" TechnicalProfileReferenceId="AAD-UserWritePhoneNumberUsingObjectId" />
+               </ClaimsExchanges>
+            </OrchestrationStep>
+         </OrchestrationSteps>
+
+      </SubJourney>
+
+      <SubJourney Id="OtherRegistrationMethod" Type="Call">
+         <OrchestrationSteps>
+            <OrchestrationStep Order="1" Type="ClaimsExchange">
+               <ClaimsExchanges>
+                  <ClaimsExchange Id="RegistionMethodSelectionExchange" TechnicalProfileReferenceId="SelfAsserted-Select-Registration-Method" />
+               </ClaimsExchanges>
+            </OrchestrationStep>
+
+            <OrchestrationStep Order="2" Type="ClaimsExchange">
+               <Preconditions>
+                  <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+                     <Value>extension_customer_number_or_address</Value>
+                     <Value>customer_number_codeword</Value>
+                     <Action>SkipThisOrchestrationStep</Action>
+                  </Precondition>
+               </Preconditions>
+               <ClaimsExchanges>
+                  <ClaimsExchange Id="CustomerNumberAndCodewordUpdateExchange" TechnicalProfileReferenceId="SelfAsserted-ProfileUpdate-By-Customer-Number-Codeword" />
+               </ClaimsExchanges>
+            </OrchestrationStep>
+
+            <OrchestrationStep Order="3" Type="ClaimsExchange">
+               <Preconditions>
+                  <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+                     <Value>extension_customer_number_or_address</Value>
+                     <Value>home_number_last_name_codeword</Value>
+                     <Action>SkipThisOrchestrationStep</Action>
+                  </Precondition>
+               </Preconditions>
+               <ClaimsExchanges>
+                  <ClaimsExchange Id="HouseNumberLastNameAndCodewordUpdateExchange" TechnicalProfileReferenceId="SelfAsserted-ProfileUpdate-By-House-Number-LastName-Codeword" />
+               </ClaimsExchanges>
+            </OrchestrationStep>
+         </OrchestrationSteps>
+
+      </SubJourney>
+
+      <SubJourney Id="PasswordReset" Type="Call">
+         <OrchestrationSteps>
+            <!--Sample: Validate user's email address. Run this step only when user resets the password-->
+            <OrchestrationStep Order="1" Type="ClaimsExchange">
+               <ClaimsExchanges>
+                  <ClaimsExchange Id="PasswordResetUsingEmailAddressExchange" TechnicalProfileReferenceId="LocalAccountDiscoveryUsingEmailAddress" />
+               </ClaimsExchanges>
+            </OrchestrationStep>
+            <!--Sample: Collect and persist a new password. Run this step only when user resets the password-->
+            <OrchestrationStep Order="2" Type="ClaimsExchange">
+               <ClaimsExchanges>
+                  <ClaimsExchange Id="NewCredentials" TechnicalProfileReferenceId="LocalAccountWritePasswordUsingObjectId" />
+               </ClaimsExchanges>
+            </OrchestrationStep>
+         </OrchestrationSteps>
+      </SubJourney>
+   </SubJourneys>
+</TrustFrameworkPolicy>

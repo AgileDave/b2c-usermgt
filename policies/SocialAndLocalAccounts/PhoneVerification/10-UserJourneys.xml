@@ -78,7 +78,7 @@
                     </JourneyList>
                 </OrchestrationStep>
 
-                <OrchestrationStep Order="6" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer"/>
+                <OrchestrationStep Order="6" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuerSLO"/>
 
             </OrchestrationSteps>
             <ClientDefinition ReferenceId="DefaultWeb"/>

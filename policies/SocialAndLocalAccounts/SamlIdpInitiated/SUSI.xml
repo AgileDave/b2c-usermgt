@@ -54,6 +54,11 @@
                 <DataType>string</DataType>
                 <UserInputType>TextBox</UserInputType>
             </ClaimType>
+            <ClaimType Id="dummyText">
+                <DisplayName>Dummy</DisplayName>
+                <DataType>string</DataType>
+                <UserInputType>TextBox</UserInputType>
+            </ClaimType>
 
         </ClaimsSchema>
     </BuildingBlocks>
@@ -96,7 +101,7 @@
                         <OutputClaim ClaimTypeReferenceId="identityProvider" DefaultValue="TESTIDP" />
                         <OutputClaim ClaimTypeReferenceId="issuerUserId" PartnerClaimType="objectid"/>
                         <OutputClaim ClaimTypeReferenceId="authenticationSource" DefaultValue="socialIdpAuthentication"/>
-                        <OutputClaim ClaimTypeReferenceId="extension_loyaltyNumber" DefaultValue="good123" AlwaysUseDefaultValue="true" />
+                        <OutputClaim ClaimTypeReferenceId="extension_loyaltyNumber" DefaultValue="bad123" AlwaysUseDefaultValue="true" />
                         <!-- Uncomment this output claim, and comment the one above, for a bad loyalty id -->
                         <!--
                         <OutputClaim ClaimTypeReferenceId="extension_loyaltyNumber" DefaultValue="bad123" AlwaysUseDefaultValue="true" />
@@ -129,6 +134,7 @@
                     <OutputClaims>
                         <OutputClaim ClaimTypeReferenceId="extension_loyaltyNumber" />
                         <OutputClaim ClaimTypeReferenceId="extension_loyaltyLevel" />
+                        <OutputClaim ClaimTypeReferenceId="dummyText" />
                     </OutputClaims>
                     <ValidationTechnicalProfiles>
                         <ValidationTechnicalProfile ReferenceId="REST-LoyaltyCheck" ContinueOnError="false" />
@@ -201,7 +207,7 @@
 
                 <OrchestrationStep Order="3" Type="ClaimsExchange">
                     <ClaimsExchanges>
-                        <ClaimsExchange Id="LoyaltyCheck" TechnicalProfileReferenceId="REST-LoyaltyCheck" />
+                        <ClaimsExchange Id="LoyaltyCheck" TechnicalProfileReferenceId="FORM-LoyaltyCheck" />
                         <!-- Uncomment this to call the self-asserted profile that calls REST-LoyaltyCheck as a Validation Tech Profile -->
                         <!--
                         <ClaimsExchange Id="LoyaltyCheck" TechnicalProfileReferenceId="FORM-LoyaltyCheck" />
@@ -268,6 +274,7 @@
                 <OutputClaim ClaimTypeReferenceId="identityProvider" />
                 <OutputClaim ClaimTypeReferenceId="extension_loyaltyNumber" />
                 <OutputClaim ClaimTypeReferenceId="extension_loyaltyLevel" />
+                <OutputClaim ClaimTypeReferenceId="dummyText" />
             </OutputClaims>
             <SubjectNamingInfo ClaimType="SubjectNamingInfo" Format="urn:oasis:names:tc:SAML:2.0:nameid-format:transient"/>
         </TechnicalProfile>

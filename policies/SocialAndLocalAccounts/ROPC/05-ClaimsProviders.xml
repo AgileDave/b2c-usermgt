@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="{Settings:Tenant}" PolicyId="B2C_1A_ROPC_ClaimsProviders" PublicPolicyUri="http://{Settings:Tenant}/B2C_1A_ROPC_ClaimsProviders">
+
+    <BasePolicy>
+        <TenantId>{Settings:Tenant}</TenantId>
+        <PolicyId>B2C_1A_ROPC_BuildingBlocks</PolicyId>
+    </BasePolicy>
+
+
+    <ClaimsProviders>
+        <ClaimsProvider>
+            <DisplayName>Local Account SignIn</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="ResourceOwnerPasswordCredentials-OAUTH2">
+                    <DisplayName>Local Account SignIn</DisplayName>
+                    <Protocol Name="OpenIdConnect" />
+                    <Metadata>
+                        <Item Key="UserMessageIfClaimsPrincipalDoesNotExist">We can't seem to find your account</Item>
+                        <Item Key="UserMessageIfInvalidPassword">Your user name or password is incorrect</Item>
+                        <Item Key="UserMessageIfOldPasswordUsed">Looks like you used an old password</Item>
+                        <Item Key="DiscoverMetadataByTokenIssuer">true</Item>
+                        <Item Key="ValidTokenIssuerPrefixes">https://sts.windows.net/</Item>
+                        <Item Key="METADATA">https://login.microsoftonline.com/{tenant}/.well-known/openid-configuration</Item>
+                        <Item Key="authorization_endpoint">https://login.microsoftonline.com/{tenant}/oauth2/token</Item>
+                        <Item Key="response_types">id_token</Item>
+                        <Item Key="response_mode">query</Item>
+                        <Item Key="scope">email openid</Item>
+                        <Item Key="grant_type">password</Item>
+                    </Metadata>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="logonIdentifier" PartnerClaimType="username" Required="true" DefaultValue="{OIDC:Username}"/>
+                        <InputClaim ClaimTypeReferenceId="password" Required="true" DefaultValue="{OIDC:Password}" />
+                        <InputClaim ClaimTypeReferenceId="grant_type" DefaultValue="password" />
+                        <InputClaim ClaimTypeReferenceId="scope" DefaultValue="openid" />
+                        <InputClaim ClaimTypeReferenceId="nca" PartnerClaimType="nca" DefaultValue="1" />
+                        <InputClaim ClaimTypeReferenceId="client_id" DefaultValue="{Settings:ProxyIdentityExperienceFrameworkAppId}" />
+                        <InputClaim ClaimTypeReferenceId="resource_id" PartnerClaimType="resource" DefaultValue="{Settings:IdentityExperienceFrameworkAppId}" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="objectId" PartnerClaimType="oid" />
+                        <OutputClaim ClaimTypeReferenceId="userPrincipalName" PartnerClaimType="upn" />
+                    </OutputClaims>
+                    <OutputClaimsTransformations>
+                        <OutputClaimsTransformation ReferenceId="CreateSubjectClaimFromObjectID" />
+                    </OutputClaimsTransformations>
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+        <ClaimsProvider>
+            <DisplayName>Azure Active Directory</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="AAD-UserReadUsingObjectId-CheckRefreshTokenDate">
+                    <Metadata>
+                        <Item Key="Operation">Read</Item>
+                        <Item Key="RaiseErrorIfClaimsPrincipalDoesNotExist">true</Item>
+                    </Metadata>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="objectId" Required="true" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="objectId" />
+                        <OutputClaim ClaimTypeReferenceId="refreshTokensValidFromDateTime" />
+                    </OutputClaims>
+                    <OutputClaimsTransformations>
+                        <OutputClaimsTransformation ReferenceId="AssertRefreshTokenIssuedLaterThanValidFromDate" />
+                        <OutputClaimsTransformation ReferenceId="CreateSubjectClaimFromObjectID" />
+                    </OutputClaimsTransformations>
+                    <IncludeTechnicalProfile ReferenceId="AAD-Common" />
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+        <ClaimsProvider>
+            <DisplayName>Session Management</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="SM-RefreshTokenReadAndSetup">
+                    <DisplayName>Trustframework Policy Engine Refresh Token Setup Technical Profile</DisplayName>
+                    <Protocol Name="None" />
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="objectId" />
+                        <OutputClaim ClaimTypeReferenceId="refreshTokenIssuedOnDateTime" />
+                    </OutputClaims>
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+        <ClaimsProvider>
+            <DisplayName>Token Issuer</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="JwtIssuer">
+                    <Metadata>
+                        <!-- Point to the redeem refresh token user journey-->
+                        <Item Key="RefreshTokenUserJourneyId">ROPCSignIn-RedeemRefreshToken</Item>
+                    </Metadata>
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+    </ClaimsProviders>
+
+</TrustFrameworkPolicy>

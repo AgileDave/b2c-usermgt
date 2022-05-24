@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="{Settings:Tenant}" PolicyId="B2C_1A_SplitSignUp_ClaimsProviders" PublicPolicyUri="http://{Settings:Tenant}/B2C_1A_SplitSignUp_ClaimsProviders">
+
+    <BasePolicy>
+        <TenantId>{Settings:Tenant}</TenantId>
+        <PolicyId>B2C_1A_SplitSignUp_BuildingBlocks</PolicyId>
+    </BasePolicy>
+
+    <ClaimsProviders>
+
+        <ClaimsProvider>
+            <DisplayName>AAD SSPR</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="AadSspr-SendCode">
+                    <DisplayName>Send Code</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.AadSsprProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="Operation">SendCode</Item>
+                        <Item Key="allowTestEmailAddressPassThrough">true</Item>
+                    </Metadata>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="email" />
+                    </InputClaims>
+                </TechnicalProfile>
+                <TechnicalProfile Id="AadSspr-VerifyCode">
+                    <DisplayName>Verify Code</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.AadSsprProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="Operation">VerifyCode</Item>
+                        <Item Key="allowTestEmailAddressPassThrough">true</Item>
+                    </Metadata>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="verificationCode" />
+                        <InputClaim ClaimTypeReferenceId="email" />
+                    </InputClaims>
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+        <!-- <ClaimsProvider>
+            <DisplayName>Email Verification</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="EmailVerification">
+                    <DisplayName>Initiate Email Address Verification For Local Account</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="ContentDefinitionReferenceId">api.localaccount.emailVerification</Item>
+                        <Item Key="language.button_continue">Continue</Item>
+                    </Metadata>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="email" PartnerClaimType="Verified.Email" Required="true" />
+                    </OutputClaims>
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider> -->
+
+        <ClaimsProvider>
+            <DisplayName>Local Account</DisplayName>
+            <TechnicalProfiles>
+                <!--Sign-up self-asserted technical profile without Email verification-->
+                <TechnicalProfile Id="LocalAccountSignUpWithReadOnlyEmail">
+                    <DisplayName>Email signup</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="IpAddressClaimReferenceId">IpAddress</Item>
+                        <Item Key="ContentDefinitionReferenceId">api.localaccountsignup</Item>
+                        <Item Key="language.button_continue">Create</Item>
+                        <!-- Remove sign-up email verification -->
+                        <Item Key="EnforceEmailVerification">False</Item>
+                    </Metadata>
+                    <InputClaimsTransformations>
+                        <InputClaimsTransformation ReferenceId="CreateReadonlyEmailClaim" />
+                    </InputClaimsTransformations>
+                    <InputClaims>
+                        <!--Sample: Set input the ReadOnlyEmail claim type to prefilled the email address-->
+                        <InputClaim ClaimTypeReferenceId="readOnlyEmail" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="objectId" />
+                        <!-- Sample: Display the ReadOnlyEmail claim type (instead of email claim type)-->
+                        <OutputClaim ClaimTypeReferenceId="readOnlyEmail" Required="true" />
+                        <OutputClaim ClaimTypeReferenceId="newPassword" Required="true" />
+                        <OutputClaim ClaimTypeReferenceId="reenterPassword" Required="true" />
+                        <OutputClaim ClaimTypeReferenceId="executed-SelfAsserted-Input" DefaultValue="true" />
+                        <OutputClaim ClaimTypeReferenceId="authenticationSource" />
+                        <OutputClaim ClaimTypeReferenceId="newUser" />
+                        <!-- Optional claims, to be collected from the user -->
+                        <OutputClaim ClaimTypeReferenceId="displayName" />
+                        <OutputClaim ClaimTypeReferenceId="givenName" />
+                        <OutputClaim ClaimTypeReferenceId="surName" />
+                    </OutputClaims>
+                    <ValidationTechnicalProfiles>
+                        <ValidationTechnicalProfile ReferenceId="AAD-UserWriteUsingLogonEmail" />
+                    </ValidationTechnicalProfiles>
+                    <!-- Sample: Disable session management for sign-up page -->
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+                </TechnicalProfile>
+                <TechnicalProfile Id="AAD-UserReadUsingEmailAddress-emailAddress">
+                    <Metadata>
+                        <Item Key="Operation">Read</Item>
+                        <Item Key="RaiseErrorIfClaimsPrincipalAlreadyExists">true</Item>
+                        <Item Key="RaiseErrorIfClaimsPrincipalDoesNotExist">false</Item>
+                        <Item Key="UserMessageIfClaimsPrincipalAlreadyExists">The email address provided is already in use</Item>
+                    </Metadata>
+                    <IncludeInSso>false</IncludeInSso>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="email" PartnerClaimType="signInNames.emailAddress" Required="true" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <!-- Required claims -->
+                        <OutputClaim ClaimTypeReferenceId="objectId" />
+                        <OutputClaim ClaimTypeReferenceId="authenticationSource" DefaultValue="localAccountAuthentication" />
+
+                        <!-- Optional claims -->
+                        <OutputClaim ClaimTypeReferenceId="userPrincipalName" />
+                        <OutputClaim ClaimTypeReferenceId="displayName" />
+                        <OutputClaim ClaimTypeReferenceId="otherMails" />
+                        <OutputClaim ClaimTypeReferenceId="signInNames.emailAddress" />
+                    </OutputClaims>
+                    <IncludeTechnicalProfile ReferenceId="AAD-Common" />
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="LocalAccountDiscoveryUsingEmailAddress-AcctExists">
+                    <DisplayName>Reset password using email address</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <!-- <Item Key="IpAddressClaimReferenceId">IP-Address</Item> -->
+                        <Item Key="ContentDefinitionReferenceId">api.localaccount.emailVerification</Item>
+                        <!-- <Item Key="UserMessageIfClaimsTransformationBooleanValueIsNotEqual">Your account has been locked. Contact your support person to unlock it, then try again.</Item> -->
+                    </Metadata>
+                    <CryptographicKeys>
+                        <Key Id="issuer_secret" StorageReferenceId="B2C_1A_TokenSigningKeyContainer" />
+                    </CryptographicKeys>
+                    <IncludeInSso>false</IncludeInSso>
+                    <DisplayClaims>
+                        <DisplayClaim DisplayControlReferenceId="emailVerificationControl" />
+                    </DisplayClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="email" />
+                        <OutputClaim ClaimTypeReferenceId="objectId" />
+                        <OutputClaim ClaimTypeReferenceId="userPrincipalName" />
+                        <OutputClaim ClaimTypeReferenceId="authenticationSource" />
+                    </OutputClaims>
+                    <ValidationTechnicalProfiles>
+                        <ValidationTechnicalProfile ReferenceId="AAD-UserReadUsingEmailAddress-emailAddress" />
+                    </ValidationTechnicalProfiles>
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+    </ClaimsProviders>
+
+</TrustFrameworkPolicy>

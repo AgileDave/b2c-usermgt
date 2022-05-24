@@ -12,7 +12,7 @@
         <ClaimsSchema>
 
             <ClaimType Id="userIdentities">
-                <DisplayName>userIdentities</DisplayName>
+                <DisplayName>userIdentities 6</DisplayName>
                 <DataType>userIdentityCollection</DataType>
                 <UserHelpText>userIdentities</UserHelpText>
             </ClaimType>

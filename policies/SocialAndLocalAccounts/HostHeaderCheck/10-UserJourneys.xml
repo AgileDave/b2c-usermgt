@@ -53,7 +53,7 @@
                         <ClaimsProviderSelection ValidationClaimsExchangeId="LocalAccountSigninEmailExchange" />
                     </ClaimsProviderSelections>
                     <ClaimsExchanges>
-                        <ClaimsExchange Id="LocalAccountSigninEmailExchange" TechnicalProfileReferenceId="SelfAsserted-LocalAccountSignin-Email-2" />
+                        <ClaimsExchange Id="LocalAccountSigninEmailExchange" TechnicalProfileReferenceId="SelfAsserted-LocalAccountSignin-Email-3" />
                     </ClaimsExchanges>
                 </OrchestrationStep>
                 <OrchestrationStep Order="6" Type="ClaimsExchange">

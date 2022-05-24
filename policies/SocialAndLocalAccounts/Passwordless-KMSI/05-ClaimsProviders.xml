@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="{Settings:Tenant}" PolicyId="B2C_1A_Passwordless_Kmsi_ClaimsProviders" PublicPolicyUri="http://{Settings:Tenant}/B2C_1A_Passwordless_Kmsi_ClaimsProviders">
+
+    <BasePolicy>
+        <TenantId>{Settings:Tenant}</TenantId>
+        <PolicyId>B2C_1A_Passwordless_Kmsi_BuildingBlocks</PolicyId>
+    </BasePolicy>
+
+    <ClaimsProviders>
+        <ClaimsProvider>
+            <DisplayName>Local Account</DisplayName>
+            <TechnicalProfiles>
+                <!--Sample: Create new technical profile based on the password reset technical profile that
+            asks the user to provide and verify the email address, and returns the user object id.
+            If the account doesn't exist, the technical profile return following error message "An account could not be found for the provided user ID."
+            The new technical profile sets the display name to "Sign-In with Email" that is shown on the sign-up or sign-in page-->
+                <TechnicalProfile Id="LocalAccountDiscoveryUsingEmailAddress-SignIn">
+                    <DisplayName>Sign-In with Email</DisplayName>
+                    <Metadata>
+                        <Item Key="setting.enableRememberMe">True</Item>
+                    </Metadata>
+
+                    <InputClaimsTransformations>
+                        <InputClaimsTransformation ReferenceId="CopySignInNameToEmail" />
+                    </InputClaimsTransformations>
+
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="email" PartnerClaimType="Verified.Email" />
+                    </InputClaims>
+
+                    <IncludeTechnicalProfile ReferenceId="LocalAccountDiscoveryUsingEmailAddress" />
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="SelfAsserted-LocalAccountSignin-Email-2">
+                    <DisplayName>Local Account Signin</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="setting.operatingMode">Email</Item>
+                        <Item Key="ContentDefinitionReferenceId">api.selfasserted</Item>
+                        <Item Key="setting.enableRememberMe">True</Item>
+                    </Metadata>
+                    <IncludeInSso>false</IncludeInSso>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="signInName" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="signInName" Required="true" />
+                        <OutputClaim ClaimTypeReferenceId="password" Required="true" />
+                        <!-- <OutputClaim ClaimTypeReferenceId="objectId" /> -->
+                        <OutputClaim ClaimTypeReferenceId="authenticationSource" DefaultValue="local" AlwaysUseDefaultValue="true" />
+                    </OutputClaims>
+
+                    <!-- <ValidationTechnicalProfiles>
+                        <ValidationTechnicalProfile ReferenceId="login-NonInteractive" />
+                    </ValidationTechnicalProfiles> -->
+
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-AAD" />
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="LocalAccountSignUpWithLogonEmail-Custom">
+                    <DisplayName>Email signup</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"/>
+                    <Metadata>
+                        <Item Key="IpAddressClaimReferenceId">IpAddress</Item>
+                        <Item Key="ContentDefinitionReferenceId">api.localaccountsignup</Item>
+                        <Item Key="language.button_continue">Create</Item>
+                    </Metadata>
+                    <CryptographicKeys>
+                        <Key Id="issuer_secret" StorageReferenceId="B2C_1A_TokenSigningKeyContainer"/>
+                    </CryptographicKeys>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="email"/>
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="objectId"/>
+                        <OutputClaim ClaimTypeReferenceId="email" PartnerClaimType="Verified.Email" Required="true"/>
+                        <!-- Sample: remove the password claims
+            <OutputClaim ClaimTypeReferenceId="newPassword" Required="true"/>
+            <OutputClaim ClaimTypeReferenceId="reenterPassword" Required="true"/> -->
+                        <OutputClaim ClaimTypeReferenceId="executed-SelfAsserted-Input" DefaultValue="true"/>
+                        <OutputClaim ClaimTypeReferenceId="authenticationSource"/>
+                        <OutputClaim ClaimTypeReferenceId="newUser"/>
+
+                        <!-- Optional claims, to be collected from the user -->
+                        <OutputClaim ClaimTypeReferenceId="displayName"/>
+                        <OutputClaim ClaimTypeReferenceId="givenName"/>
+                        <OutputClaim ClaimTypeReferenceId="surName"/>
+                    </OutputClaims>
+                    <ValidationTechnicalProfiles>
+                        <ValidationTechnicalProfile ReferenceId="AAD-UserWriteUsingLogonEmail-Custom"/>
+                    </ValidationTechnicalProfiles>
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-AAD"/>
+                </TechnicalProfile>
+
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+        <ClaimsProvider>
+            <DisplayName>Azure Active Directory</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="AAD-UserWriteUsingLogonEmail-Custom">
+                    <Metadata>
+                        <Item Key="Operation">Write</Item>
+                        <Item Key="RaiseErrorIfClaimsPrincipalAlreadyExists">true</Item>
+                    </Metadata>
+                    <IncludeInSso>false</IncludeInSso>
+                    <InputClaimsTransformations>
+                        <!--Sample: create a random password-->
+                        <InputClaimsTransformation ReferenceId="CreateRandomPassword" />
+                    </InputClaimsTransformations>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="email" PartnerClaimType="signInNames.emailAddress" Required="true"/>
+                    </InputClaims>
+                    <PersistedClaims>
+                        <!-- Required claims -->
+                        <PersistedClaim ClaimTypeReferenceId="email" PartnerClaimType="signInNames.emailAddress"/>
+                        <PersistedClaim ClaimTypeReferenceId="displayName" DefaultValue="unknown"/>
+
+                        <PersistedClaim ClaimTypeReferenceId="newPassword" PartnerClaimType="password"/>
+                        <PersistedClaim ClaimTypeReferenceId="passwordPolicies" DefaultValue="DisablePasswordExpiration, DisableStrongPassword"/>
+
+                        <!-- Optional claims. -->
+                        <PersistedClaim ClaimTypeReferenceId="givenName"/>
+                        <PersistedClaim ClaimTypeReferenceId="surname"/>
+                    </PersistedClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="objectId"/>
+                        <OutputClaim ClaimTypeReferenceId="newUser" PartnerClaimType="newClaimsPrincipalCreated"/>
+                        <OutputClaim ClaimTypeReferenceId="authenticationSource" DefaultValue="localAccountAuthentication"/>
+                        <OutputClaim ClaimTypeReferenceId="userPrincipalName"/>
+                        <OutputClaim ClaimTypeReferenceId="signInNames.emailAddress"/>
+                    </OutputClaims>
+                    <IncludeTechnicalProfile ReferenceId="AAD-Common"/>
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-AAD"/>
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+    </ClaimsProviders>
+
+</TrustFrameworkPolicy>

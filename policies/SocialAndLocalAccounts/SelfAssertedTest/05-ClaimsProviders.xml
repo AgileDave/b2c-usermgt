@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="{Settings:Tenant}" PolicyId="B2C_1A_SelfAssertedTest_ClaimsProviders" PublicPolicyUri="http://{Settings:Tenant}/B2C_1A_SelfAssertedTest_ClaimsProviders">
+
+    <BasePolicy>
+        <TenantId>{Settings:Tenant}</TenantId>
+        <PolicyId>B2C_1A_SelfAssertedTest_BuildingBlocks</PolicyId>
+    </BasePolicy>
+
+    <ClaimsProviders>
+
+        <ClaimsProvider>
+            <Domain>Domain name</Domain>
+            <DisplayName>Display name</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="SimpleSelfAsserted">
+                    <DisplayName>Email signup</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="ContentDefinitionReferenceId">api.selfasserted</Item>
+                    </Metadata>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="simpleClaim" Required="true" />
+                        <OutputClaim ClaimTypeReferenceId="email" Required="true" />
+                        <OutputClaim ClaimTypeReferenceId="authenticationSource" DefaultValue="localauth" AlwaysUseDefaultValue="true" />
+                        <OutputClaim ClaimTypeReferenceId="displayName" Required="true"/>
+                        <OutputClaim ClaimTypeReferenceId="givenName" />
+                        <OutputClaim ClaimTypeReferenceId="surName" />
+                    </OutputClaims>
+                </TechnicalProfile>
+                <TechnicalProfile Id="Get-Parameters">
+                    <DisplayName>Profile to populate calims with parameters</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ClaimsTransformationProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="IncludeClaimResolvingInClaimsHandling">true</Item>
+                    </Metadata>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="domain_hint" DefaultValue="{oauth-kv:target_domain_hint}" AlwaysUseDefaultValue="true"/>
+                        <OutputClaim ClaimTypeReferenceId="mystate" DefaultValue="{OAUTH-KV:state}" AlwaysUseDefaultValue="true"/>
+                        <OutputClaim ClaimTypeReferenceId="reduri" DefaultValue="{OIDC:RedirectUri}" AlwaysUseDefaultValue="true"/>
+                        <OutputClaim ClaimTypeReferenceId="nonce" DefaultValue="{OIDC:Nonce}" AlwaysUseDefaultValue="true"/>
+                    </OutputClaims>
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+    </ClaimsProviders>
+
+</TrustFrameworkPolicy>

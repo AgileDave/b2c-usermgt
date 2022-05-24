@@ -9,6 +9,23 @@
     </BasePolicy>
 
     <ClaimsProviders>
+        <!-- <ClaimsProvider>
+            <Domain>line.com</Domain>
+            <DisplayName>Line IDP</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="Line-OAUTH">
+                    <Metadata>
+                        <Item Key="client_id">1653566316</Item>
+                        <Item Key="client_id">1657020296</Item>
+                        <Item Key="scope">email openid profile phone address</Item>
+                        <Item Key="ClaimsEndpoint">https://api.line.me/oauth2/v2.1/verify</Item>
+                        <Item Key="response_mode">form_post</Item>
+                        <Item Key="response_types">code</Item>
+                    </Metadata>
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider> -->
+
         <ClaimsProvider>
             <Domain>microsoftonline.com</Domain>
             <DisplayName>Common AAD</DisplayName>
@@ -67,6 +84,8 @@
                 <TechnicalProfile Id="SelfAsserted-LocalAccountSignin-Email">
                     <Metadata>
                         <Item Key="IncludeClaimResolvingInClaimsHandling">true</Item>
+                        <!-- Remove sign up link -->
+                        <Item Key="setting.showSignupLink">false</Item>
                     </Metadata>
                     <OutputClaims>
                         <OutputClaim ClaimTypeReferenceId="CR-IP-Address" DefaultValue="{Context:IPAddress}" AlwaysUseDefaultValue="true" />
@@ -90,10 +109,12 @@
                         <Item Key="IncludeClaimResolvingInClaimsHandling">true</Item>
                     </Metadata>
                     <OutputClaims>
+                        <!-- <OutputClaim ClaimTypeReferenceId="alternativeSecurityId" DefaultValue="" AlwaysUseDefaultValue="true" /> -->
                         <OutputClaim ClaimTypeReferenceId="domain_hint" DefaultValue="{oauth-kv:target_domain_hint}" AlwaysUseDefaultValue="true"/>
                         <OutputClaim ClaimTypeReferenceId="mystate" DefaultValue="{OAUTH-KV:state}" AlwaysUseDefaultValue="true"/>
                         <OutputClaim ClaimTypeReferenceId="reduri" DefaultValue="{OIDC:RedirectUri}" AlwaysUseDefaultValue="true"/>
                         <OutputClaim ClaimTypeReferenceId="nonce" DefaultValue="{OIDC:Nonce}" AlwaysUseDefaultValue="true"/>
+                        <OutputClaim ClaimTypeReferenceId="qsFavFood" DefaultValue="{OAUTH-KV:qsFavFood}" AlwaysUseDefaultValue="true" />
                     </OutputClaims>
                 </TechnicalProfile>
 

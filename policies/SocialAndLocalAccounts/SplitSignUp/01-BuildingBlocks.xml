@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="{Settings:Tenant}" PolicyId="B2C_1A_SplitSignUp_BuildingBlocks" PublicPolicyUri="http://{Settings:Tenant}/B2C_1A_SplitSignUp_BuildingBlocks">
+
+    <BasePolicy>
+        <TenantId>{Settings:Tenant}</TenantId>
+        <PolicyId>B2C_1A_TrustFrameworkExtensions</PolicyId>
+    </BasePolicy>
+
+    <BuildingBlocks>
+
+        <ClaimsSchema>
+            <!-- Read only email address to present to the user-->
+            <ClaimType Id="readonlyEmail">
+                <DisplayName>E-mail Address</DisplayName>
+                <DataType>string</DataType>
+                <UserInputType>Readonly</UserInputType>
+            </ClaimType>
+            <ClaimType Id="azureMfaSessionId">
+                <DataType>string</DataType>
+            </ClaimType>
+            <ClaimType Id="IP-Address">
+                <DisplayName>ip address</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText>Users current logon IP Address</UserHelpText>
+            </ClaimType>
+
+            <ClaimType Id="verificationCode">
+                <DisplayName>Verification Code</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText>Enter your email verification code</UserHelpText>
+                <UserInputType>TextBox</UserInputType>
+            </ClaimType>
+        </ClaimsSchema>
+        <ClaimsTransformations>
+            <ClaimsTransformation Id="CreateReadonlyEmailClaim" TransformationMethod="FormatStringClaim">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="email" TransformationClaimType="inputClaim" />
+                </InputClaims>
+                <InputParameters>
+                    <InputParameter Id="stringFormat" DataType="string" Value="{0}" />
+                </InputParameters>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="readonlyEmail" TransformationClaimType="outputClaim" />
+                </OutputClaims>
+            </ClaimsTransformation>
+        </ClaimsTransformations>
+
+        <ContentDefinitions>
+            <ContentDefinition Id="api.localaccount.emailVerification">
+                <LoadUri>~/tenant/templates/AzureBlue/selfAsserted.cshtml</LoadUri>
+                <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+                <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:2.1.8</DataUri>
+                <Metadata>
+                    <Item Key="DisplayName">Collect information from user page</Item>
+                </Metadata>
+                <LocalizedResourcesReferences MergeBehavior="Prepend">
+                    <LocalizedResourcesReference Language="en" LocalizedResourcesReferenceId="api.localaccount.emailVerification.en" />
+                </LocalizedResourcesReferences>
+            </ContentDefinition>
+        </ContentDefinitions>
+
+        <Localization Enabled="true">
+            <SupportedLanguages DefaultLanguage="en" MergeBehavior="ReplaceAll">
+                <SupportedLanguage>en</SupportedLanguage>
+            </SupportedLanguages>
+            <LocalizedResources Id="api.localaccount.emailVerification.en">
+                <LocalizedStrings>
+                    <LocalizedString ElementType="UxElement" StringId="button_continue">Continue</LocalizedString>
+                </LocalizedStrings>
+            </LocalizedResources>
+        </Localization>
+
+
+        <DisplayControls>
+            <DisplayControl Id="emailVerificationControl" UserInterfaceControlType="VerificationControl">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="email" />
+                </InputClaims>
+                <DisplayClaims>
+                    <DisplayClaim ClaimTypeReferenceId="email" ControlClaimType="Email" Required="true" />
+                    <DisplayClaim ClaimTypeReferenceId="verificationCode" ControlClaimType="VerificationCode" Required="true" />
+                </DisplayClaims>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="azureMfaSessionId" />
+                </OutputClaims>
+                <Actions>
+                    <Action Id="SendCode">
+                        <ValidationClaimsExchange>
+                            <ValidationClaimsExchangeTechnicalProfile TechnicalProfileReferenceId="AAD-UserReadUsingEmailAddress-emailAddress" ContinueOnError="false" />
+                            <ValidationClaimsExchangeTechnicalProfile TechnicalProfileReferenceId="AadSspr-SendCode">
+                                <Preconditions>
+                                    <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+                                        <Value>objectId</Value>
+                                        <Action>SkipThisValidationTechnicalProfile</Action>
+                                    </Precondition>
+                                </Preconditions>
+                            </ValidationClaimsExchangeTechnicalProfile>
+                        </ValidationClaimsExchange>
+                    </Action>
+                    <Action Id="VerifyCode">
+                        <ValidationClaimsExchange>
+                            <ValidationClaimsExchangeTechnicalProfile TechnicalProfileReferenceId="AadSspr-VerifyCode" />
+                        </ValidationClaimsExchange>
+                    </Action>
+                </Actions>
+            </DisplayControl>
+        </DisplayControls>
+
+    </BuildingBlocks>
+</TrustFrameworkPolicy>

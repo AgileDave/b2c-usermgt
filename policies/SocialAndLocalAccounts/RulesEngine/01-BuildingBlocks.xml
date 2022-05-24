@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="{Settings:Tenant}" PolicyId="B2C_1A_RulesEngine_BuildingBlocks" PublicPolicyUri="http://{Settings:Tenant}/B2C_1A_RulesEngine_BuildingBlocks">
+
+    <BasePolicy>
+        <TenantId>{Settings:Tenant}</TenantId>
+        <PolicyId>B2C_1A_TrustFrameworkExtensions</PolicyId>
+    </BasePolicy>
+
+    <BuildingBlocks>
+        <ClaimsSchema>
+            <ClaimType Id="inputJson">
+                <DisplayName>JSON input for REGO check</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText>This claim holds add'l claim values that will be evaluated by REGO policies</UserHelpText>
+            </ClaimType>
+
+            <ClaimType Id="IP-Address">
+                <DisplayName>ip address</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText>Users current logon IP Address</UserHelpText>
+            </ClaimType>
+
+            <ClaimType Id="CR-IP-Address">
+                <DisplayName>ip address</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText>Users current logon IP Address</UserHelpText>
+            </ClaimType>
+
+            <ClaimType Id="groups">
+                <DisplayName>User Groups</DisplayName>
+                <DataType>stringCollection</DataType>
+                <UserHelpText>The groups a user has for this application</UserHelpText>
+            </ClaimType>
+
+            <ClaimType Id="login_hint">
+                <DisplayName>Login Hint for AAD</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText/>
+            </ClaimType>
+
+            <ClaimType Id="domain_hint">
+                <DisplayName>Domain Hint for AAD</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText/>
+            </ClaimType>
+
+            <ClaimType Id="role">
+                <DisplayName>Login Hint for AAD</DisplayName>
+                <DataType>stringCollection</DataType>
+                <UserHelpText/>
+            </ClaimType>
+
+            <ClaimType Id="clientId">
+                <DisplayName>clientId</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText />
+            </ClaimType>
+
+            <ClaimType Id="isClientIdAllowed">
+                <DisplayName>is client id allowed to access policy</DisplayName>
+                <DataType>boolean</DataType>
+                <UserHelpText>true if client id is allowed for this policy; false otherwise</UserHelpText>
+            </ClaimType>
+
+            <ClaimType Id="isClientIpAddrAllowed">
+                <DisplayName>is client ip address allowed to access policy</DisplayName>
+                <DataType>boolean</DataType>
+                <UserHelpText>true if client ip is allowed for this policy; false otherwise</UserHelpText>
+            </ClaimType>
+            <!-- 
+            <ClaimType Id="regoJson">
+                <DisplayName>Output of REGO evaluation as JSON</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText>Output from the REGO policies as JSON for help with debugging</UserHelpText>
+            </ClaimType> -->
+
+            <ClaimType Id="response">
+                <DisplayName>response</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText>A claim responsible for holding response to send to the relying party</UserHelpText>
+            </ClaimType>
+            <ClaimType Id="responseMsg">
+                <DisplayName></DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText>A claim responsible for holding response messages to send to the relying party</UserHelpText>
+                <UserInputType>Paragraph</UserInputType>
+            </ClaimType>
+            <!-- set to "True" if the client id requesting access is on the allow list in the "isAppAllowed" claims transformation check -->
+            <ClaimType Id="allowAppAccess">
+                <DisplayName></DisplayName>
+                <DataType>string</DataType>
+            </ClaimType>
+
+
+            <!-- Terms of Use Claims -->
+
+            <ClaimType Id="extension_termsOfUseConsentChoice">
+                <DisplayName></DisplayName>
+                <DataType>string</DataType>
+                <UserInputType>CheckboxMultiSelect</UserInputType>
+                <Restriction>
+                    <Enumeration Text=" I agree to the Terms Of Service" Value="AgreeToTermsOfUseConsentYes" SelectByDefault="false" />
+                </Restriction>
+            </ClaimType>
+            <ClaimType Id="currentTime">
+                <DisplayName>Current Time</DisplayName>
+                <DataType>dateTime</DataType>
+                <AdminHelpText>Current date time in UTC.</AdminHelpText>
+                <UserHelpText>Current date time in UTC.</UserHelpText>
+            </ClaimType>
+            <ClaimType Id="extension_termsOfUseConsentDateTime">
+                <DisplayName>Terms of Use Consent Date Time</DisplayName>
+                <DataType>dateTime</DataType>
+                <AdminHelpText>Terms of Use Consent date time in UTC.</AdminHelpText>
+                <UserHelpText>Terms of Use Consent date time in UTC.</UserHelpText>
+            </ClaimType>
+            <ClaimType Id="termsOfUseConsentRequired">
+                <DisplayName>Terms of Use Consent Required</DisplayName>
+                <DataType>boolean</DataType>
+                <AdminHelpText>Boolean that specifies if Terms of Use Consent is required or not.</AdminHelpText>
+                <UserHelpText>Boolean that specifies if Terms of Use Consent is required or not</UserHelpText>
+            </ClaimType>
+            <ClaimType Id="extension_termsOfUseConsentVersion">
+                <DisplayName>Terms of Use Consent Version</DisplayName>
+                <DataType>string</DataType>
+                <AdminHelpText>Terms of Use Consent Version.</AdminHelpText>
+                <UserHelpText>Terms of Use Consent Version.</UserHelpText>
+            </ClaimType>
+
+            <!-- End Terms of Use Claims -->
+        </ClaimsSchema>
+        <ClaimsTransformations>
+            <ClaimsTransformation Id="CreateLoginHintClaim" TransformationMethod="CreateStringClaim">
+                <InputParameters>
+                    <InputParameter Id="value" DataType="string" Value="{OAUTH-KV:lh}" />
+                </InputParameters>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="login_hint" TransformationClaimType="createdClaim" />
+                </OutputClaims>
+            </ClaimsTransformation>
+
+            <ClaimsTransformation Id="GenerateRegoAuthzBody" TransformationMethod="GenerateJson">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="clientId" TransformationClaimType="input.clientId" />
+                    <InputClaim ClaimTypeReferenceId="CR-IP-Address" TransformationClaimType="input.clientIp" />
+                </InputClaims>
+                <!-- <InputParameters>
+                    <InputParameter Id="input.clientId" DataType="string" Value="{OIDC:ClientId}"/>
+                </InputParameters> -->
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="inputJson" TransformationClaimType="outputClaim"/>
+                </OutputClaims>
+            </ClaimsTransformation>
+
+
+            <ClaimsTransformation Id="GenerateBlockMessage" TransformationMethod="FormatStringMultipleClaims">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="clientId" TransformationClaimType="inputClaim1" />
+                    <InputClaim ClaimTypeReferenceId="CR-IP-Address" TransformationClaimType="inputClaim2" />
+                </InputClaims>
+                <InputParameters>
+                    <InputParameter Id="stringFormat" DataType="string" Value="You are not permitted access this app at this time. Please check back later. Client ID: {0}  Client IP: {1}" />
+                </InputParameters>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="responseMsg" TransformationClaimType="outputClaim" />
+                </OutputClaims>
+            </ClaimsTransformation>
+
+
+
+            <!-- Terms of Use Transformations -->
+
+            <ClaimsTransformation Id="GetCurrentDateTime" TransformationMethod="GetCurrentDateTime">
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="currentTime" TransformationClaimType="currentDateTime" />
+                </OutputClaims>
+            </ClaimsTransformation>
+            <ClaimsTransformation Id="IsTermsOfUseConsentRequiredForDateTime" TransformationMethod="IsTermsOfUseConsentRequired">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="extension_termsOfUseConsentDateTime" TransformationClaimType="termsOfUseConsentDateTime" />
+                </InputClaims>
+                <InputParameters>
+                    <InputParameter Id="termsOfUseTextUpdateDateTime" DataType="dateTime" Value="2020-01-30T23:03:45" />
+                </InputParameters>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="termsOfUseConsentRequired" TransformationClaimType="result" />
+                </OutputClaims>
+            </ClaimsTransformation>
+            <ClaimsTransformation Id="GetNewUserAgreeToTermsOfUseConsentVersion" TransformationMethod="CreateStringClaim">
+                <InputParameters>
+                    <InputParameter Id="value" DataType="string" Value="V1" />
+                </InputParameters>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="extension_termsOfUseConsentVersion" TransformationClaimType="createdClaim" />
+                </OutputClaims>
+            </ClaimsTransformation>
+            <!-- Not used here, but this OR IsTermsOfUseConsentRequiredForDateTime check can be used -->
+            <ClaimsTransformation Id="IsTermsOfUseConsentRequiredForVersion" TransformationMethod="CompareClaimToValue">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="extension_termsOfUseConsentVersion" TransformationClaimType="inputClaim1" />
+                </InputClaims>
+                <InputParameters>
+                    <InputParameter Id="compareTo" DataType="string" Value="V2" />
+                    <InputParameter Id="operator" DataType="string" Value="not equal" />
+                    <InputParameter Id="ignoreCase" DataType="string" Value="true" />
+                </InputParameters>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="termsOfUseConsentRequired" TransformationClaimType="outputClaim" />
+                </OutputClaims>
+            </ClaimsTransformation>
+
+            <!-- End Terms of Use Transformations -->
+
+        </ClaimsTransformations>
+    </BuildingBlocks>
+
+
+</TrustFrameworkPolicy>

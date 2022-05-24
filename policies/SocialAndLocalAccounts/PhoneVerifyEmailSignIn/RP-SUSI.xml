@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" DeploymentMode="{Settings:DeploymentMode}" UserJourneyRecorderEndpoint="urn:journeyrecorder:applicationinsights" PolicySchemaVersion="0.3.0.0" TenantId="{Settings:Tenant}" PolicyId="B2C_1A_PhoneVerifyEmailSignin_SignUpSignIn" PublicPolicyUri="http://{Settings:Tenant}/B2C_1A_PhoneVerifyEmailSignin_SignUpSignIn">
+
+    <BasePolicy>
+        <TenantId>{Settings:Tenant}</TenantId>
+        <PolicyId>B2C_1A_PhoneVerifyEmailSignin_UserJourneys</PolicyId>
+    </BasePolicy>
+
+    <RelyingParty>
+        <DefaultUserJourney ReferenceId="PhoneSignInUp" />
+        <UserJourneyBehaviors>
+            <JourneyInsights TelemetryEngine="ApplicationInsights" InstrumentationKey="{Settings:AppInsightsKey}" DeveloperMode="true" ClientEnabled="false" ServerEnabled="true" TelemetryVersion="1.0.0" />
+        </UserJourneyBehaviors>
+        <TechnicalProfile Id="PolicyProfile">
+            <DisplayName>PolicyProfile</DisplayName>
+            <Protocol Name="OpenIdConnect" />
+            <OutputClaims>
+                <OutputClaim ClaimTypeReferenceId="signinnames.phoneNumber" />
+                <OutputClaim ClaimTypeReferenceId="objectId" PartnerClaimType="sub"/>
+                <OutputClaim ClaimTypeReferenceId="displayname" />
+                <OutputClaim ClaimTypeReferenceId="newUser" />
+                <OutputClaim ClaimTypeReferenceId="objectId" PartnerClaimType="sub"/>
+                <OutputClaim ClaimTypeReferenceId="identityProvider" DefaultValue="local" />
+
+            </OutputClaims>
+            <SubjectNamingInfo ClaimType="sub" />
+        </TechnicalProfile>
+    </RelyingParty>
+</TrustFrameworkPolicy>

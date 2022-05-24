@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="{Settings:Tenant}" PolicyId="B2C_1A_PhoneOrEmail_BuildingBlocks" PublicPolicyUri="http://{Settings:Tenant}/B2C_1A_PhoneOrEmail_BuildingBlocks">
+
+    <BasePolicy>
+        <TenantId>{Settings:Tenant}</TenantId>
+        <PolicyId>B2C_1A_TrustFrameworkExtensions</PolicyId>
+    </BasePolicy>
+
+    <BuildingBlocks>
+
+        <ClaimsSchema>
+
+            <ClaimType Id="phoneNumber">
+                <DisplayName>Phone Number</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText>Enter Phone Number</UserHelpText>
+                <UserInputType>TextBox</UserInputType>
+            </ClaimType>
+
+            <ClaimType Id="isEmailString">
+                <DisplayName>Is Email String</DisplayName>
+                <DataType>boolean</DataType>
+                <UserHelpText/>
+            </ClaimType>
+            <ClaimType Id="validationResult">
+                <DisplayName>Is Email String</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText/>
+            </ClaimType>
+        </ClaimsSchema>
+
+
+        <ClaimsTransformations>
+
+            <ClaimsTransformation Id="CheckIfSigninNameIsEmail" TransformationMethod="SetClaimsIfRegexMatch">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="signInName" TransformationClaimType="claimToMatch" />
+                </InputClaims>
+                <InputParameters>
+                    <InputParameter Id="matchTo" DataType="string" Value="(?&lt;mailAlias&gt;.*)@(.*)$" />
+                    <InputParameter Id="outputClaimIfMatched" DataType="string" Value="isEmail" />
+                    <InputParameter Id="extractGroups" DataType="boolean" Value="false" />
+                </InputParameters>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="validationResult" TransformationClaimType="outputClaim" />
+                    <OutputClaim ClaimTypeReferenceId="isEmailString" TransformationClaimType="regexCompareResultClaim" />
+                    <!-- <OutputClaim ClaimTypeReferenceId="mailAlias" /> -->
+                </OutputClaims>
+            </ClaimsTransformation>
+
+        </ClaimsTransformations>
+
+    </BuildingBlocks>
+</TrustFrameworkPolicy>

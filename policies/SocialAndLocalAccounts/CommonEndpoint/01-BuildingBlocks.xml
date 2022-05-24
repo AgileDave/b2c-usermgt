@@ -10,6 +10,11 @@
 
     <BuildingBlocks>
         <ClaimsSchema>
+            <!-- <ClaimType Id="daily-message">
+                <DisplayName>Daily Message</DisplayName>
+                <DataType>string</DataType>
+                <UserInputType>Paragraph</UserInputType>
+            </ClaimType> -->
             <ClaimType Id="IP-Address">
                 <DisplayName>ip address</DisplayName>
                 <DataType>string</DataType>
@@ -54,6 +59,12 @@
                 <DataType>string</DataType>
                 <UserHelpText/>
             </ClaimType>
+            <ClaimType Id="qsFavFood">
+                <DisplayName>Query String param for Favorite Food</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText/>
+            </ClaimType>
+
 
             <ClaimType Id="role">
                 <DisplayName>Login Hint for AAD</DisplayName>
@@ -112,14 +123,27 @@
                 </OutputClaims>
             </ClaimsTransformation>
 
+            <!-- <ClaimsTransformation Id="GetDailyMessage" TransformationMethod="CreateStringClaim">
+                <InputParameters>
+                    <InputParameter Id="value" DataType="string" Value="This is the daily message." />
+                </InputParameters>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="daily-message" TransformationClaimType="createdClaim" />
+                </OutputClaims>
+            </ClaimsTransformation> -->
         </ClaimsTransformations>
 
         <ContentDefinitions>
 
+            <ContentDefinition Id="api.selfasserted">
+                <LoadUri>~/tenant/templates/AzureBlue/selfAsserted.cshtml</LoadUri>
+                <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:1.2.0</DataUri>
+            </ContentDefinition>
+
             <ContentDefinition Id="api.signuporsignin">
-                <LoadUri>~/tenant/templates/AzureBlue/unified.cshtml</LoadUri>
+                <LoadUri>https://b2c-loyalty-app.azurewebsites.net/assets/templates/unified.html</LoadUri>
                 <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
-                <DataUri>urn:com:microsoft:aad:b2c:elements:contract:unifiedssp:2.1.5</DataUri>
+                <DataUri>urn:com:microsoft:aad:b2c:elements:contract:unifiedssp:2.1.6</DataUri>
                 <Metadata>
                     <Item Key="DisplayName">Signin and Signup</Item>
                 </Metadata>

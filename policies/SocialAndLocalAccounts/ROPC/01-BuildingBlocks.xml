@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="{Settings:Tenant}" PolicyId="B2C_1A_ROPC_BuildingBlocks" PublicPolicyUri="http://{Settings:Tenant}/B2C_1A_ROPC_BuildingBlocks">
+
+    <BasePolicy>
+        <TenantId>{Settings:Tenant}</TenantId>
+        <PolicyId>B2C_1A_TrustFrameworkExtensions</PolicyId>
+    </BasePolicy>
+
+    <BuildingBlocks>
+        <ClaimsSchema>
+            <ClaimType Id="logonIdentifier">
+                <DisplayName>User name or email address that the user can use to sign in</DisplayName>
+                <DataType>string</DataType>
+            </ClaimType>
+            <ClaimType Id="resource">
+                <DisplayName>The resource parameter passes to the ROPC endpoint</DisplayName>
+                <DataType>string</DataType>
+            </ClaimType>
+            <ClaimType Id="refreshTokenIssuedOnDateTime">
+                <DisplayName>An internal parameter used to determine whether the user should be permitted to authenticate again using their existing refresh token.</DisplayName>
+                <DataType>string</DataType>
+            </ClaimType>
+            <ClaimType Id="refreshTokensValidFromDateTime">
+                <DisplayName>An internal parameter used to determine whether the user should be permitted to authenticate again using their existing refresh token.</DisplayName>
+                <DataType>string</DataType>
+            </ClaimType>
+        </ClaimsSchema>
+        <ClaimsTransformations>
+            <ClaimsTransformation Id="CreateSubjectClaimFromObjectID" TransformationMethod="CreateStringClaim">
+                <InputParameters>
+                    <InputParameter Id="value" DataType="string" Value="Not supported currently. Use oid claim." />
+                </InputParameters>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="sub" TransformationClaimType="createdClaim" />
+                </OutputClaims>
+            </ClaimsTransformation>
+
+            <ClaimsTransformation Id="AssertRefreshTokenIssuedLaterThanValidFromDate" TransformationMethod="AssertDateTimeIsGreaterThan">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="refreshTokenIssuedOnDateTime" TransformationClaimType="leftOperand" />
+                    <InputClaim ClaimTypeReferenceId="refreshTokensValidFromDateTime" TransformationClaimType="rightOperand" />
+                </InputClaims>
+                <InputParameters>
+                    <InputParameter Id="AssertIfEqualTo" DataType="boolean" Value="false" />
+                    <InputParameter Id="AssertIfRightOperandIsNotPresent" DataType="boolean" Value="true" />
+                </InputParameters>
+            </ClaimsTransformation>
+        </ClaimsTransformations>
+    </BuildingBlocks>
+</TrustFrameworkPolicy>

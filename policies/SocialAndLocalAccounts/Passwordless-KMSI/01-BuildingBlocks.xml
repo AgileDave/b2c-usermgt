@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="{Settings:Tenant}" PolicyId="B2C_1A_Passwordless_Kmsi_BuildingBlocks" PublicPolicyUri="http://{Settings:Tenant}/B2C_1A_Passwordless_Kmsi_BuildingBlocks">
+
+    <BasePolicy>
+        <TenantId>{Settings:Tenant}</TenantId>
+        <PolicyId>B2C_1A_TrustFrameworkExtensions</PolicyId>
+    </BasePolicy>
+
+    <BuildingBlocks>
+
+        <ClaimsSchema>
+            <ClaimType Id="readOnlyEmail">
+                <DisplayName>Email</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText>Email</UserHelpText>
+                <UserInputType>Readonly</UserInputType>
+            </ClaimType>
+
+        </ClaimsSchema>
+
+        <ClaimsTransformations>
+            <ClaimsTransformation Id="CreateRandomPassword" TransformationMethod="CreateRandomString">
+                <InputParameters>
+                    <InputParameter Id="randomGeneratorType" DataType="string" Value="GUID"/>
+                </InputParameters>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="newPassword" TransformationClaimType="outputClaim"/>
+                </OutputClaims>
+            </ClaimsTransformation>
+
+
+            <ClaimsTransformation Id="CopySignInNameToEmail" TransformationMethod="CopyClaim">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="signInName" TransformationClaimType="inputClaim"/>
+                </InputClaims>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="email" TransformationClaimType="outputClaim"/>
+                </OutputClaims>
+            </ClaimsTransformation>
+        </ClaimsTransformations>
+
+
+        <ContentDefinitions>
+
+            <ContentDefinition Id="api.selfasserted">
+                <LoadUri>https://b2cstorageitems.blob.core.windows.net/src2/selfAsserted.html</LoadUri>
+                <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:1.2.0</DataUri>
+            </ContentDefinition>
+
+            <ContentDefinition Id="api.signuporsignin">
+                <LoadUri>https://b2cstorageitems.blob.core.windows.net/src2/unified.html</LoadUri>
+                <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+                <DataUri>urn:com:microsoft:aad:b2c:elements:contract:unifiedssp:2.1.5</DataUri>
+                <Metadata>
+                    <Item Key="DisplayName">Signin and Signup</Item>
+                </Metadata>
+                <LocalizedResourcesReferences MergeBehavior="Prepend">
+                    <LocalizedResourcesReference Language="en" LocalizedResourcesReferenceId="api.signuporsignin.en" />
+                </LocalizedResourcesReferences>
+            </ContentDefinition>
+
+            <ContentDefinition Id="api.error">
+                <DataUri>urn:com:microsoft:aad:b2c:elements:contract:globalexception:1.2.0</DataUri>
+            </ContentDefinition>
+            <ContentDefinition Id="api.idpselections">
+                <DataUri>urn:com:microsoft:aad:b2c:elements:contract:providerselection:1.2.0</DataUri>
+            </ContentDefinition>
+            <ContentDefinition Id="api.idpselections.signup">
+                <DataUri>urn:com:microsoft:aad:b2c:elements:contract:providerselection:1.2.0</DataUri>
+            </ContentDefinition>
+            <ContentDefinition Id="api.selfasserted.profileupdate">
+                <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:1.2.0</DataUri>
+            </ContentDefinition>
+            <ContentDefinition Id="api.localaccountsignup">
+                <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:1.2.0</DataUri>
+            </ContentDefinition>
+            <ContentDefinition Id="api.localaccountpasswordreset">
+                <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:1.2.0</DataUri>
+            </ContentDefinition>
+            <ContentDefinition Id="api.phonefactor">
+                <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+                <DataUri>urn:com:microsoft:aad:b2c:elements:contract:multifactor:1.2.0</DataUri>
+            </ContentDefinition>
+        </ContentDefinitions>
+
+        <Localization Enabled="true">
+            <SupportedLanguages DefaultLanguage="en" MergeBehavior="ReplaceAll">
+                <SupportedLanguage>en</SupportedLanguage>
+            </SupportedLanguages>
+            <LocalizedResources Id="api.signuporsignin.en">
+                <LocalizedStrings>
+                    <LocalizedString ElementType="UxElement" StringId="createaccount_intro">#Don't have an account?</LocalizedString>
+                    <LocalizedString ElementType="UxElement" StringId="forgotpassword_link">#Forgot your password?</LocalizedString>
+                    <LocalizedString ElementType="UxElement" StringId="divider_title">#OR</LocalizedString>
+                    <LocalizedString ElementType="UxElement" StringId="button_signin">#Sign in</LocalizedString>
+                    <LocalizedString ElementType="UxElement" StringId="social_intro">#Sign in with your social account</LocalizedString>
+                    <LocalizedString ElementType="UxElement" StringId="unknown_error">#We are having trouble signing you in. Please try again later.</LocalizedString>
+                    <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfInvalidPassword">#Your password is incorrect.</LocalizedString>
+                    <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfClaimsPrincipalDoesNotExist">#We can't seem to find your account.</LocalizedString>
+                    <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfOldPasswordUsed">#Looks like you used an old password.</LocalizedString>
+                    <LocalizedString ElementType="ErrorMessage" StringId="DefaultMessage">#Invalid username or password.</LocalizedString>
+                    <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfUserAccountDisabled">#Your account has been locked. Contact your support person to unlock it, then try again.</LocalizedString>
+                    <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfUserAccountLocked">#Your account is temporarily locked to prevent unauthorized use. Try again later.</LocalizedString>
+                    <LocalizedString ElementType="ErrorMessage" StringId="AADRequestsThrottled">#There are too many requests at this moment. Please wait for some time and try again.</LocalizedString>
+                    <LocalizedString ElementType="ErrorMessage" StringId="AADB2C90225">#The username and password are invalid, sir</LocalizedString>
+                    <LocalizedString ElementType="ErrorMessage" StringId="AADB2C90114">#You're locked out, shunned, shamed....try later, dude</LocalizedString>
+                </LocalizedStrings>
+            </LocalizedResources>
+        </Localization>
+
+    </BuildingBlocks>
+
+</TrustFrameworkPolicy>

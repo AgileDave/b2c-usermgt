@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="{Settings:Tenant}" PolicyId="B2C_1A_RevokeSso_BuildingBlocks" PublicPolicyUri="http://{Settings:Tenant}/B2C_1A_RevokeSso_BuildingBlocks">
+
+    <BasePolicy>
+        <TenantId>{Settings:Tenant}</TenantId>
+        <PolicyId>B2C_1A_MFA_Extensions</PolicyId>
+    </BasePolicy>
+
+    <BuildingBlocks>
+        <ClaimsSchema>
+            <ClaimType Id="errorCode">
+                <DisplayName>errorCode</DisplayName>
+                <DataType>string</DataType>
+                <AdminHelpText>errorCode</AdminHelpText>
+                <UserHelpText>errorCode</UserHelpText>
+            </ClaimType>
+            <ClaimType Id="errorMessage">
+                <DisplayName>errorMessage</DisplayName>
+                <DataType>string</DataType>
+                <AdminHelpText>errorMessage</AdminHelpText>
+                <UserHelpText>errorMessage</UserHelpText>
+            </ClaimType>
+            <ClaimType Id="lastLogonTime">
+                <DisplayName>lastLogonTime</DisplayName>
+                <DataType>dateTime</DataType>
+                <AdminHelpText>lastLogonTime</AdminHelpText>
+                <UserHelpText>lastLogonTime</UserHelpText>
+            </ClaimType>
+            <ClaimType Id="refreshTokensValidFromDateTime">
+                <DisplayName>refreshTokensValidFromDateTime</DisplayName>
+                <DataType>dateTime</DataType>
+                <AdminHelpText>Used to determine if the user should be permitted to reauthenticate silently via their existing refresh token.</AdminHelpText>
+                <UserHelpText>Used to determine if the user should be permitted to reauthenticate silently via their existing refresh token.</UserHelpText>
+            </ClaimType>
+            <ClaimType Id="isSessionRevoked">
+                <DisplayName>isSessionRevoked</DisplayName>
+                <DataType>boolean</DataType>
+                <AdminHelpText>isSessionRevoked</AdminHelpText>
+                <UserHelpText>isSessionRevoked</UserHelpText>
+            </ClaimType>
+        </ClaimsSchema>
+        <ClaimsTransformations>
+            <ClaimsTransformation Id="GetSystemDateTime" TransformationMethod="GetCurrentDateTime">
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="lastLogonTime" TransformationClaimType="currentDateTime" />
+                </OutputClaims>
+            </ClaimsTransformation>
+
+            <ClaimsTransformation Id="CompareLastLogonTimeToRTRevocationTime" TransformationMethod="DateTimeComparison">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="lastLogonTime" TransformationClaimType="firstDateTime" />
+                    <InputClaim ClaimTypeReferenceId="refreshTokensValidFromDateTime" TransformationClaimType="secondDateTime" />
+                </InputClaims>
+                <InputParameters>
+                    <InputParameter Id="operator" DataType="string" Value="earlier than" />
+                    <InputParameter Id="timeSpanInSeconds" DataType="int" Value="10" />
+                </InputParameters>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="isSessionRevoked" TransformationClaimType="result" />
+                </OutputClaims>
+            </ClaimsTransformation>
+
+            <ClaimsTransformation Id="GenerateErrorCode" TransformationMethod="CreateStringClaim">
+                <InputParameters>
+                    <InputParameter Id="value" DataType="string" Value="Error_SessionRevoked" />
+                </InputParameters>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="errorCode" TransformationClaimType="createdClaim" />
+                </OutputClaims>
+            </ClaimsTransformation>
+            <ClaimsTransformation Id="GenerateErrorMessage" TransformationMethod="CreateStringClaim">
+                <InputParameters>
+                    <InputParameter Id="value" DataType="string" Value="Session has been revoked due to refresh token revocation." />
+                </InputParameters>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="errorMessage" TransformationClaimType="createdClaim" />
+                </OutputClaims>
+            </ClaimsTransformation>
+
+        </ClaimsTransformations>
+    </BuildingBlocks>
+
+</TrustFrameworkPolicy>

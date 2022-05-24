@@ -62,6 +62,15 @@
 
             <!-- Demo: Stores the user last matched in Azure Active Directory user account.
       We use the attribute to prevent and verify the verification code has already been used.-->
+            <ClaimType Id="surname">
+                <!-- <Restriction>
+                    <Pattern RegularExpression="(?=.{1,256}$)^.*[^ ].*" HelpText="Surname can be no more than 256 characters." />
+                </Restriction> -->
+                <PredicateValidationReference Id="CheckStringLengthValidation" />
+            </ClaimType>
+            <ClaimType Id="givenName">
+                <PredicateValidationReference Id="CheckStringLengthValidation" />
+            </ClaimType>
             <ClaimType Id="extension_StrongAuthenticationAppTimeStepMatched">
                 <DisplayName>Verified App Time Step Matched</DisplayName>
                 <DataType>string</DataType>
@@ -85,6 +94,28 @@
             </ClaimType>
 
         </ClaimsSchema>
+
+        <Predicates>
+            <Predicate Id="MaxStringLength" Method="IsLengthRange" HelpText="This value cannot be longer than 256 characters">
+                <Parameters>
+                    <Parameter Id="Minimum">1</Parameter>
+                    <Parameter Id="Maximum">256</Parameter>
+                </Parameters>
+            </Predicate>
+        </Predicates>
+
+        <PredicateValidations>
+            <PredicateValidation Id="CheckStringLengthValidation">
+                <PredicateGroups>
+                    <PredicateGroup Id="CheckStringLengthPredicateGroup">
+                        <UserHelpText>This is some predicate group help text</UserHelpText>
+                        <PredicateReferences>
+                            <PredicateReference Id="MaxStringLength" />
+                        </PredicateReferences>
+                    </PredicateGroup>
+                </PredicateGroups>
+            </PredicateValidation>
+        </PredicateValidations>
 
         <ClaimsTransformations>
             <ClaimsTransformation Id="CopyMfaPhoneToMobile" TransformationMethod="CopyClaim">
@@ -141,6 +172,9 @@
             </ContentDefinition>
             <ContentDefinition Id="api.selfasserted.profileupdate">
                 <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:2.1.7</DataUri>
+                <LocalizedResourcesReferences MergeBehavior="Prepend">
+                    <LocalizedResourcesReference Language="en" LocalizedResourcesReferenceId="api.selfasserted.profileupdate.en" />
+                </LocalizedResourcesReferences>
             </ContentDefinition>
             <ContentDefinition Id="api.localaccountsignup">
                 <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:2.1.7</DataUri>
@@ -160,6 +194,14 @@
             <SupportedLanguages DefaultLanguage="en" MergeBehavior="ReplaceAll">
                 <SupportedLanguage>en</SupportedLanguage>
             </SupportedLanguages>
+            <LocalizedResources Id="api.selfasserted.profileupdate.en">
+                <LocalizedStrings>
+                    <LocalizedString ElementType="Predicate" ElementId="MaxStringLength" StringId="HelpText">#This value cannot be longer than 256 characters</LocalizedString>
+                    <LocalizedString ElementType="PredicateValidation" ElementId="CheckStringLengthValidation" StringId="CheckStringLengthPredicateGroup">#Here's what you did wrong</LocalizedString>
+                    <LocalizedString ElementType="ClaimType" ElementId="surname" StringId="PatternHelpText">#Last Name cannot be over 256 characters</LocalizedString>
+                    <LocalizedString ElementType="UxElement" StringId="error_fieldIncorrect">#One or more fields are filled out incorrectly. Please check your entries and try again.</LocalizedString>
+                </LocalizedStrings>
+            </LocalizedResources>
             <LocalizedResources Id="api.phonefactor.en">
                 <LocalizedStrings>
                     <!-- <LocalizedString ElementType="UxElement" StringId="button_verify">Call Me</LocalizedString>

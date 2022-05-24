@@ -31,6 +31,18 @@
                     </ClaimsExchanges>
                 </OrchestrationStep>
 
+                <!-- <OrchestrationStep Order="4" Type="ClaimsExchange">
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="LocalAccountSigninEmailExchange" TechnicalProfileReferenceId="SelfAsserted-LocalAccountSignin-Email" />
+                    </ClaimsExchanges>
+                </OrchestrationStep> -->
+
+                <!-- <OrchestrationStep Order="4" Type="InvokeSubJourney">
+                    <JourneyList>
+                        <Candidate SubJourneyReferenceId="AuthenticationProviderSelectionSubJ" />
+                    </JourneyList>
+                </OrchestrationStep>
+ -->
 
                 <OrchestrationStep Order="4" Type="CombinedSignInAndSignUp" ContentDefinitionReferenceId="api.signuporsignin">
                     <ClaimsProviderSelections>
@@ -42,7 +54,6 @@
                     </ClaimsExchanges>
                 </OrchestrationStep>
 
-                <!-- Check if the user has selected to sign in using one of the social providers -->
                 <OrchestrationStep Order="5" Type="ClaimsExchange">
                     <Preconditions>
                         <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
@@ -56,6 +67,8 @@
                     </ClaimsExchanges>
                 </OrchestrationStep>
 
+
+                <!-- UNCOMMENT THIS WHEN DONE TESTING!!! -->
                 <!-- For social IDP authentication, attempt to find the user account in the directory. -->
                 <OrchestrationStep Order="6" Type="ClaimsExchange">
                     <Preconditions>
@@ -102,6 +115,7 @@
                 <!-- The previous step (SelfAsserted-Social) could have been skipped if there were no attributes to collect 
              from the user. So, in that case, create the user in the directory if one does not already exist 
              (verified using objectId which would be set from the last step if account was created in the directory. -->
+                <!-- UNCOMMENT THIS WHEN DONE TESTING!!! -->
                 <OrchestrationStep Order="9" Type="ClaimsExchange">
                     <Preconditions>
                         <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
@@ -122,5 +136,35 @@
 
 
     </UserJourneys>
+
+    <SubJourneys>
+
+        <SubJourney Id="AuthenticationProviderSelectionSubJ" Type="Call">
+            <OrchestrationSteps>
+                <OrchestrationStep Order="1" Type="CombinedSignInAndSignUp" ContentDefinitionReferenceId="api.signuporsignin">
+                    <ClaimsProviderSelections>
+                        <ClaimsProviderSelection ValidationClaimsExchangeId="LocalAccountSigninEmailExchange" />
+                        <ClaimsProviderSelection TargetClaimsExchangeId="AzureADCommonExchange" />
+                    </ClaimsProviderSelections>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="LocalAccountSigninEmailExchange" TechnicalProfileReferenceId="SelfAsserted-LocalAccountSignin-Email" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <OrchestrationStep Order="2" Type="ClaimsExchange">
+                    <Preconditions>
+                        <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+                            <Value>objectId</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="SignUpWithLogonEmailExchange" TechnicalProfileReferenceId="LocalAccountSignUpWithLogonEmail" />
+                        <ClaimsExchange Id="AzureADCommonExchange" TechnicalProfileReferenceId="AADCommon-OpenIdConnect" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+            </OrchestrationSteps>
+        </SubJourney>
+    </SubJourneys>
 
 </TrustFrameworkPolicy>

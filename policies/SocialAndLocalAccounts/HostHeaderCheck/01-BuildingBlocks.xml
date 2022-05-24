@@ -72,6 +72,24 @@
                     <OutputClaim ClaimTypeReferenceId="blockAccess_b2clogin" TransformationClaimType="outputClaim" />
                 </OutputClaims>
             </ClaimsTransformation>
+
+            <ClaimsTransformation Id="AssertIsAccessAllowed_microsoftonline" TransformationMethod="AssertBooleanClaimIsEqualToValue">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="blockAccess_microsoftonline" TransformationClaimType="inputClaim" />
+                </InputClaims>
+                <InputParameters>
+                    <InputParameter Id="valueToCompareTo" DataType="boolean" Value="false" />
+                </InputParameters>
+            </ClaimsTransformation>
+            <ClaimsTransformation Id="AssertIsAccessAllowed_b2clogin" TransformationMethod="AssertBooleanClaimIsEqualToValue">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="blockAccess_b2clogin" TransformationClaimType="inputClaim" />
+                </InputClaims>
+                <InputParameters>
+                    <InputParameter Id="valueToCompareTo" DataType="boolean" Value="false" />
+                </InputParameters>
+            </ClaimsTransformation>
+
         </ClaimsTransformations>
         <ContentDefinitions>
             <ContentDefinition Id="api.selfasserted.blockpage">

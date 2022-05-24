@@ -360,6 +360,35 @@
         </ClaimsProvider>
 
 
+        <ClaimsProvider>
+            <DisplayName>Single SignOut Token Issuer</DisplayName>
+            <TechnicalProfiles>
+                <!-- Session management technical profile for OIDC based tokens -->
+                <TechnicalProfile Id="SM-OAuth-issuer">
+                    <DisplayName>Session Management Provider</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.SSO.OAuthSSOSessionProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="JwtIssuerSLO">
+                    <DisplayName>JWT Issuer for SLO</DisplayName>
+                    <Protocol Name="OpenIdConnect" />
+                    <OutputTokenFormat>JWT</OutputTokenFormat>
+                    <Metadata>
+                        <Item Key="client_id">{service:te}</Item>
+                        <Item Key="issuer_refresh_token_user_identity_claim_type">objectId</Item>
+                        <Item Key="SendTokenResponseBodyWithJsonNumbers">true</Item>
+                    </Metadata>
+                    <CryptographicKeys>
+                        <Key Id="issuer_secret" StorageReferenceId="B2C_1A_TokenSigningKeyContainer" />
+                        <Key Id="issuer_refresh_token_key" StorageReferenceId="B2C_1A_TokenEncryptionKeyContainer" />
+                    </CryptographicKeys>
+                    <InputClaims />
+                    <OutputClaims />
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-OAuth-issuer" />
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
     </ClaimsProviders>
 
 

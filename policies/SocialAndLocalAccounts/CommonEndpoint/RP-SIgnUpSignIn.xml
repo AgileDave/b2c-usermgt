@@ -20,9 +20,9 @@
                 <OutputClaim ClaimTypeReferenceId="displayName" />
                 <OutputClaim ClaimTypeReferenceId="givenName" />
                 <OutputClaim ClaimTypeReferenceId="surname" />
-                <OutputClaim ClaimTypeReferenceId="email" />
-                <OutputClaim ClaimTypeReferenceId="groups" />
-                <OutputClaim ClaimTypeReferenceId="role" />
+                <OutputClaim ClaimTypeReferenceId="email" DefaultValue="none" />
+                <OutputClaim ClaimTypeReferenceId="groups" DefaultValue="none" />
+                <OutputClaim ClaimTypeReferenceId="role" DefaultValue="none" />
                 <OutputClaim ClaimTypeReferenceId="IP-Address" PartnerClaimType="CurrentIP"/>
                 <OutputClaim ClaimTypeReferenceId="CR-IP-Address" />
                 <OutputClaim ClaimTypeReferenceId="objectId" PartnerClaimType="sub"/>
@@ -31,6 +31,7 @@
                 <OutputClaim ClaimTypeReferenceId="mystate" />
                 <OutputClaim ClaimTypeReferenceId="reduri" />
                 <OutputClaim ClaimTypeReferenceId="nonce" />
+                <OutputClaim ClaimTypeReferenceId="qsFavFood" />
 
             </OutputClaims>
             <SubjectNamingInfo ClaimType="sub" />

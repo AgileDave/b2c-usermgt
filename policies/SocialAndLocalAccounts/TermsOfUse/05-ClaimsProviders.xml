@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="{Settings:Tenant}" PolicyId="B2C_1A_TermsOfUse_ClaimsProviders" PublicPolicyUri="http://{Settings:Tenant}/B2C_1A_TermsOfUse_ClaimsProviders">
+
+    <BasePolicy>
+        <TenantId>{Settings:Tenant}</TenantId>
+        <PolicyId>B2C_1A_TermsOfUse_BuildingBlocks</PolicyId>
+    </BasePolicy>
+
+    <ClaimsProviders>
+
+
+        <ClaimsProvider>
+            <!-- Page that prompts for a new TOU on sign in if the users TOU is out of date-->
+            <DisplayName>Self Asserted</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="SelfAsserted-Input-ToU-SignIn">
+                    <DisplayName>Self Asserted ToU</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="ContentDefinitionReferenceId">api.selfasserted</Item>
+                        <Item Key="AllowGenerationOfClaimsWithNullValues">true</Item>
+                    </Metadata>
+                    <CryptographicKeys>
+                        <Key Id="issuer_secret" StorageReferenceId="B2C_1A_TokenSigningKeyContainer" />
+                    </CryptographicKeys>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="objectId" />
+                        <InputClaim ClaimTypeReferenceId="extension_termsOfUseConsentChoice" DefaultValue="AgreeToTermsOfUseConsentNo" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="termsOfUseConsentRequired" />
+                        <OutputClaim ClaimTypeReferenceId="extension_termsOfUseConsentChoice" Required="true" />
+                    </OutputClaims>
+                    <ValidationTechnicalProfiles>
+                        <ValidationTechnicalProfile ReferenceId="Update-TOU-Status" />
+                    </ValidationTechnicalProfiles>
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+        <ClaimsProvider>
+            <DisplayName>Local Account</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="SelfAsserted-LocalAccountSignin-Email">
+                    <DisplayName>Local Account Signin</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="SignUpTarget">SignUpWithLogonEmailExchange</Item>
+                        <Item Key="setting.operatingMode">Email</Item>
+                        <Item Key="ContentDefinitionReferenceId">api.selfasserted</Item>
+                    </Metadata>
+                    <IncludeInSso>false</IncludeInSso>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="signInName" />
+                        <InputClaim ClaimTypeReferenceId="currentTime" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="signInName" Required="true" />
+                        <OutputClaim ClaimTypeReferenceId="password" Required="true" />
+                        <OutputClaim ClaimTypeReferenceId="objectId" />
+                        <OutputClaim ClaimTypeReferenceId="authenticationSource" />
+                    </OutputClaims>
+                    <ValidationTechnicalProfiles>
+                        <ValidationTechnicalProfile ReferenceId="login-NonInteractive" />
+                    </ValidationTechnicalProfiles>
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-AAD" />
+                </TechnicalProfile>
+                <!-- read the last time the user consented -->
+                <TechnicalProfile Id="Check-TOU-Status">
+                    <Metadata>
+                        <Item Key="Operation">Read</Item>
+                        <Item Key="RaiseErrorIfClaimsPrincipalDoesNotExist">true</Item>
+                    </Metadata>
+                    <IncludeInSso>false</IncludeInSso>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="objectId" Required="true" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="displayName" />
+                        <OutputClaim ClaimTypeReferenceId="otherMails" />
+                        <OutputClaim ClaimTypeReferenceId="givenName" />
+                        <OutputClaim ClaimTypeReferenceId="surname" />
+                        <OutputClaim ClaimTypeReferenceId="extension_termsOfUseConsentVersion" />
+                        <OutputClaim ClaimTypeReferenceId="extension_termsOfUseConsentDateTime" DefaultValue="2017-10-01T15:00:00.0000000Z" />
+                    </OutputClaims>
+                    <OutputClaimsTransformations>
+                        <OutputClaimsTransformation ReferenceId="IsTermsOfUseConsentRequiredForVersion" />
+                        <OutputClaimsTransformation ReferenceId="IsTermsOfUseConsentRequiredForDateTime" />
+                        <OutputClaimsTransformation ReferenceId="IsTermsOfUseConsentRequired" />
+                    </OutputClaimsTransformations>
+                    <IncludeTechnicalProfile ReferenceId="AAD-Common" />
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="Get-Init-Vars">
+                    <DisplayName>Get current time</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ClaimsTransformationProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="currentTime" />
+                        <OutputClaim ClaimTypeReferenceId="currentTouVersion" DefaultValue="{Settings:CurrentTermsOfUseVersion}" AlwaysUseDefaultValue="true" />
+                    </OutputClaims>
+                    <OutputClaimsTransformations>
+                        <OutputClaimsTransformation ReferenceId="GetCurrentDateTime" />
+                    </OutputClaimsTransformations>
+                </TechnicalProfile>
+
+
+                <TechnicalProfile Id="SelfAsserted-Social">
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="extension_termsOfUseConsentChoice" Required="true" />
+                    </OutputClaims>
+                    <IncludeTechnicalProfile ReferenceId="AAD-Common" />
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="AAD-UserWriteUsingAlternativeSecurityId">
+                    <PersistedClaims>
+                        <PersistedClaim ClaimTypeReferenceId="currentTime" PartnerClaimType="extension_termsOfUseConsentDateTime" />
+                    </PersistedClaims>
+                    <IncludeTechnicalProfile ReferenceId="AAD-Common" />
+                </TechnicalProfile>
+
+                <!-- write the current time to the consent attribute if the user reconsents to TOU on sign in -->
+                <TechnicalProfile Id="Update-TOU-Status">
+                    <Metadata>
+                        <Item Key="Operation">Write</Item>
+                        <Item Key="RaiseErrorIfClaimsPrincipalDoesNotExist">true</Item>
+                    </Metadata>
+                    <IncludeInSso>false</IncludeInSso>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="objectId" Required="true" />
+                    </InputClaims>
+                    <PersistedClaims>
+                        <PersistedClaim ClaimTypeReferenceId="objectId" />
+                        <PersistedClaim ClaimTypeReferenceId="currentTime" PartnerClaimType="extension_termsOfUseConsentDateTime" />
+                        <PersistedClaim ClaimTypeReferenceId="currentTouVersion" PartnerClaimType="extension_termsOfUseConsentVersion" />
+                    </PersistedClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="termsOfUseConsentRequired" DefaultValue="false" AlwaysUseDefaultValue="true" />
+                    </OutputClaims>
+                    <IncludeTechnicalProfile ReferenceId="AAD-Common" />
+                </TechnicalProfile>
+                <!-- sign up page with TOU checkbox-->
+                <TechnicalProfile Id="LocalAccountSignUpWithLogonEmailCustom">
+                    <DisplayName>Email signup</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="ContentDefinitionReferenceId">api.localaccountsignup</Item>
+                        <Item Key="language.button_continue">Create</Item>
+                    </Metadata>
+                    <CryptographicKeys>
+                        <Key Id="issuer_secret" StorageReferenceId="B2C_1A_TokenSigningKeyContainer" />
+                    </CryptographicKeys>
+                    <InputClaimsTransformations>
+                        <InputClaimsTransformation ReferenceId="GetCurrentDateTime" />
+                    </InputClaimsTransformations>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="extension_termsOfUseConsentChoice" DefaultValue="AgreeToTermsOfUseConsentNo" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="objectId" />
+                        <OutputClaim ClaimTypeReferenceId="email" PartnerClaimType="Email" Required="true" />
+                        <OutputClaim ClaimTypeReferenceId="newPassword" Required="true" />
+                        <OutputClaim ClaimTypeReferenceId="reenterPassword" Required="true" />
+                        <OutputClaim ClaimTypeReferenceId="executed-SelfAsserted-Input" DefaultValue="true" />
+                        <OutputClaim ClaimTypeReferenceId="authenticationSource" />
+                        <OutputClaim ClaimTypeReferenceId="newUser" />
+                        <!-- Optional claims, to be collected from the user -->
+                        <OutputClaim ClaimTypeReferenceId="displayName" />
+                        <OutputClaim ClaimTypeReferenceId="givenName" />
+                        <OutputClaim ClaimTypeReferenceId="surName" />
+                        <OutputClaim ClaimTypeReferenceId="extension_termsOfUseConsentChoice" Required="true" />
+                    </OutputClaims>
+                    <ValidationTechnicalProfiles>
+                        <ValidationTechnicalProfile ReferenceId="AAD-UserWriteUsingLogonEmail" />
+                    </ValidationTechnicalProfiles>
+                </TechnicalProfile>
+                <!-- During sign up, write the current time of consent, and version -->
+                <TechnicalProfile Id="AAD-UserWriteUsingLogonEmail">
+                    <PersistedClaims>
+                        <PersistedClaim ClaimTypeReferenceId="currentTime" PartnerClaimType="extension_termsOfUseConsentDateTime" />
+                        <PersistedClaim ClaimTypeReferenceId="extension_termsOfUseConsentChoice" />
+                        <!-- <PersistedClaim ClaimTypeReferenceId="extension_termsOfUseConsentVersion" DefaultValue="V1" /> -->
+                        <PersistedClaim ClaimTypeReferenceId="currentTouVersion" PartnerClaimType="extension_termsOfUseConsentVersion" />
+                    </PersistedClaims>
+                </TechnicalProfile>
+
+                <!-- NOTE - Will allow SSO from Forgot password flow to Sign In flow, but will also allow SSO to 'change 
+        password' page without email verification for Forgot password flow after sign in or sign up -->
+                <TechnicalProfile Id="LocalAccountDiscoveryUsingEmailAddress">
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-AAD" />
+                </TechnicalProfile>
+
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+
+
+    </ClaimsProviders>
+
+</TrustFrameworkPolicy>
