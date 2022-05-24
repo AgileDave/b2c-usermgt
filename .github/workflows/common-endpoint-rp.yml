@@ -41,8 +41,8 @@ jobs:
         uses: azure-ad-b2c/deploy-trustframework-policy@v5.3
         with:
           folder: "./policies/SocialAndLocalAccounts/CommonEndpoint"
-          files: "*.xml"
+          files: "01-BuildingBlocks.xml,05-ClaimsProviders.xml,10-UserJourneys.xml,RP-SIgnUpSignIn.xml"
           tenant: ${{ secrets.TENANT_ID }}
           clientId: ${{ secrets.SPN_CLIENTID }}
           clientSecret: ${{ secrets.SPN_CLIENTPWD }}
-          verbose: true
+          verbose: false
