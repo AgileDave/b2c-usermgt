@@ -38,7 +38,7 @@ jobs:
           
 
       - name: 'Upload TrustFrameworkBase Policy'
-        uses: azure-ad-b2c/deploy-trustframework-policy@v3
+        uses: azure-ad-b2c/deploy-trustframework-policy@v5.3
         with:
           folder: "./policies/SocialAndLocalAccounts/CommonEndpoint"
           files: "01-BuildingBlocks.xml,05-ClaimsProviders.xml,10-UserJourneys.xml,RP-SignUpSignIn.xml"
