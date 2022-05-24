@@ -56,7 +56,7 @@
                 <UserHelpText/>
             </ClaimType>
             <ClaimType Id="someValue">
-                <DisplayName>Nonce for AAD</DisplayName>
+                <DisplayName>Some Value to Enter</DisplayName>
                 <DataType>string</DataType>
                 <UserHelpText/>
                 <UserInputType>TextBox</UserInputType>
