@@ -22,6 +22,7 @@
                 <OutputClaim ClaimTypeReferenceId="givenName" />
                 <OutputClaim ClaimTypeReferenceId="surname" />
                 <OutputClaim ClaimTypeReferenceId="email" PartnerClaimType="sub" />
+                <OutputClaim ClaimTypeReferenceId="someValue" />
                 <OutputClaim ClaimTypeReferenceId="identityProvider" DefaultValue="local" />
                 <OutputClaim ClaimTypeReferenceId="tenantId" AlwaysUseDefaultValue="true" DefaultValue="{Policy:TenantObjectId}" />
             </OutputClaims>
