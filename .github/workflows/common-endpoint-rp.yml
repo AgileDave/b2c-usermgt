@@ -30,7 +30,7 @@ jobs:
         with:
           tokenPrefix: '{'
           tokenSuffix: '}'
-          files: '["policies/SocialAndLocalAccounts/CommonEndPoint/*.xml"]'
+          files: '["./policies/SocialAndLocalAccounts/CommonEndpoint/*.xml"]'
         env:
           Settings:Tenant: ${{ secrets.TENANT_ID }}
           Settings:AppInsightsKey: ${{ secrets.APPINSIGHTSKEY }}
@@ -40,8 +40,8 @@ jobs:
       - name: 'Upload TrustFrameworkBase Policy'
         uses: azure-ad-b2c/deploy-trustframework-policy@v3
         with:
-          folder: "./policies/SocialAndLocalAccounts/CommonEndPoint"
-          files: '["policies/SocialAndLocalAccounts/CommonEndPoint/*.xml"]'
+          folder: "./policies/SocialAndLocalAccounts/CommonEndpoint"
+          files: '["*.xml"]'
           tenant: ${{ secrets.TENANT_ID }}
           clientId: ${{ secrets.SPN_CLIENTID }}
           clientSecret: ${{ secrets.SPN_CLIENTPWD }}
