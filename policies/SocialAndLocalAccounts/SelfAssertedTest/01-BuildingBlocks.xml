@@ -55,6 +55,11 @@
                 <DataType>string</DataType>
                 <UserHelpText/>
             </ClaimType>
+            <ClaimType Id="someValue">
+                <DisplayName>Nonce for AAD</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText/>
+            </ClaimType>
         </ClaimsSchema>
 
 

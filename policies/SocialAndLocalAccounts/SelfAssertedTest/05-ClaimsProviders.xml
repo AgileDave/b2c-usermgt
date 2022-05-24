@@ -40,6 +40,7 @@
                         <OutputClaim ClaimTypeReferenceId="mystate" DefaultValue="{OAUTH-KV:state}" AlwaysUseDefaultValue="true"/>
                         <OutputClaim ClaimTypeReferenceId="reduri" DefaultValue="{OIDC:RedirectUri}" AlwaysUseDefaultValue="true"/>
                         <OutputClaim ClaimTypeReferenceId="nonce" DefaultValue="{OIDC:Nonce}" AlwaysUseDefaultValue="true"/>
+                        <OutputClaim ClaimTypeReferenceId="someValue" DefaultValue="EMPTY" />
                     </OutputClaims>
                 </TechnicalProfile>
             </TechnicalProfiles>

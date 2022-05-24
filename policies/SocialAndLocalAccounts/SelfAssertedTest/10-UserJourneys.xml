@@ -11,17 +11,17 @@
     <UserJourneys>
         <UserJourney Id="SimpleCollect">
             <OrchestrationSteps>
-                <!-- <OrchestrationStep Order="1" Type="ClaimsExchange">
+                <OrchestrationStep Order="1" Type="ClaimsExchange">
                     <ClaimsExchanges>
                         <ClaimsExchange Id="Get-QueryParameters" TechnicalProfileReferenceId="Get-Parameters" />
                     </ClaimsExchanges>
-                </OrchestrationStep> -->
-                <OrchestrationStep Order="1" Type="ClaimsExchange">
+                </OrchestrationStep>
+                <OrchestrationStep Order="2" Type="ClaimsExchange">
                     <ClaimsExchanges>
                         <ClaimsExchange Id="CollectData" TechnicalProfileReferenceId="SimpleSelfAsserted" />
                     </ClaimsExchanges>
                 </OrchestrationStep>
-                <OrchestrationStep Order="2" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+                <OrchestrationStep Order="3" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
             </OrchestrationSteps>
             <ClientDefinition ReferenceId="DefaultWeb" />
         </UserJourney>
