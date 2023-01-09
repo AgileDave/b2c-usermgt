@@ -79,7 +79,7 @@
                     <OutputClaims />
                     <EnabledForUserJourneys>Never</EnabledForUserJourneys>
                 </TechnicalProfile>
-                <TechnicalProfile Id="SetHostName">
+                <!-- <TechnicalProfile Id="SetHostName">
                     <DisplayName>Set the host name</DisplayName>
                     <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ClaimsTransformationProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
                     <Metadata>
@@ -89,7 +89,7 @@
                         <OutputClaim ClaimTypeReferenceId="hostName" DefaultValue="{Context:HostName}" AlwaysUseDefaultValue="true" />
                     </OutputClaims>
                     <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
-                </TechnicalProfile>
+                </TechnicalProfile> -->
 
                 <TechnicalProfile Id="SelfAsserted-LocalAccountSignin-Email-3">
                     <DisplayName>Local Account Signin</DisplayName>
@@ -139,8 +139,11 @@
                     <Metadata>
                         <Item Key="IncludeClaimResolvingInClaimsHandling">true</Item>
                     </Metadata>
+                    <InputClaimsTransformations>
+                        <InputClaimsTransformation ReferenceId="NullHostName" />
+                    </InputClaimsTransformations>
                     <InputClaims>
-                        <InputClaim ClaimTypeReferenceId="hostName" DefaultValue="{Context:HostName}" />
+                        <InputClaim ClaimTypeReferenceId="hostName" DefaultValue="{Context:HostName}" AlwaysUseDefaultValue="true" />
                         <!-- <InputClaim ClaimTypeReferenceId="allowedHostName" DefaultValue="https://login.consumerbiz.net" AlwaysUseDefaultValue="true" /> -->
                     </InputClaims>
                     <OutputClaims>

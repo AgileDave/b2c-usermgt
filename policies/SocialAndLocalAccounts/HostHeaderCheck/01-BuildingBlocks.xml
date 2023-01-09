@@ -78,7 +78,7 @@
                     <InputClaim ClaimTypeReferenceId="blockAccess_microsoftonline" TransformationClaimType="inputClaim" />
                 </InputClaims>
                 <InputParameters>
-                    <InputParameter Id="valueToCompareTo" DataType="boolean" Value="false" />
+                    <InputParameter Id="valueToCompareTo" DataType="boolean" Value="False" />
                 </InputParameters>
             </ClaimsTransformation>
             <ClaimsTransformation Id="AssertIsAccessAllowed_b2clogin" TransformationMethod="AssertBooleanClaimIsEqualToValue">
@@ -86,8 +86,14 @@
                     <InputClaim ClaimTypeReferenceId="blockAccess_b2clogin" TransformationClaimType="inputClaim" />
                 </InputClaims>
                 <InputParameters>
-                    <InputParameter Id="valueToCompareTo" DataType="boolean" Value="false" />
+                    <InputParameter Id="valueToCompareTo" DataType="boolean" Value="False" />
                 </InputParameters>
+            </ClaimsTransformation>
+
+            <ClaimsTransformation Id="NullHostName" TransformationMethod="NullClaim">
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="hostName" TransformationClaimType="claim_to_null" />
+                </OutputClaims>
             </ClaimsTransformation>
 
         </ClaimsTransformations>

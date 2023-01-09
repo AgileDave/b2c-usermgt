@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="{Settings:Tenant}" PolicyId="B2C_1A_Claim_UserInputTypes_All" PublicPolicyUri="http://{Settings:Tenant}/B2C_1A_Claim_UserInputTypes_All">
+
+    <BasePolicy>
+        <TenantId>{Settings:Tenant}</TenantId>
+        <PolicyId>B2C_1A_TrustFrameworkExtensions</PolicyId>
+    </BasePolicy>
+
+    <BuildingBlocks>
+        <ClaimsSchema>
+            <ClaimType Id="PasswordType">
+                <DisplayName>Password type</DisplayName>
+                <DataType>string</DataType>
+                <UserInputType>Password</UserInputType>
+            </ClaimType>
+            <ClaimType Id="TextBoxType">
+                <DisplayName>TextBox type</DisplayName>
+                <DataType>string</DataType>
+                <UserInputType>TextBox</UserInputType>
+            </ClaimType>
+            <ClaimType Id="ParagraphType">
+                <DisplayName>Paragraph type</DisplayName>
+                <DataType>string</DataType>
+                <UserInputType>Paragraph</UserInputType>
+            </ClaimType>
+            <ClaimType Id="EmailBoxType">
+                <DisplayName>EmailBox type</DisplayName>
+                <DataType>string</DataType>
+                <UserInputType>EmailBox</UserInputType>
+                <!-- <Restriction>
+          <Pattern RegularExpression="^[a-zA-Z0-9!#$%&amp;'+^_`{}~-]+(?:\.[a-zA-Z0-9!#$%&amp;'+^_`{}~-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$" HelpText="Please enter a valid email address."/>
+        </Restriction> -->
+            </ClaimType>
+            <ClaimType Id="DropdownSingleSelectType">
+                <DisplayName>DropdownSingleSelect type</DisplayName>
+                <DataType>string</DataType>
+                <UserInputType>DropdownSingleSelect</UserInputType>
+                <Restriction>
+                    <Enumeration Text="Bellevue" Value="bellevue" SelectByDefault="false"/>
+                    <Enumeration Text="Redmond" Value="redmond" SelectByDefault="false"/>
+                    <Enumeration Text="New York" Value="new-york" SelectByDefault="true"/>
+                </Restriction>
+            </ClaimType>
+            <ClaimType Id="RadioSingleSelectType">
+                <DisplayName>RadioSingleSelect type</DisplayName>
+                <DataType>string</DataType>
+                <UserInputType>RadioSingleSelect</UserInputType>
+                <Restriction>
+                    <Enumeration Text="Blue" Value="Blue" SelectByDefault="false"/>
+                    <Enumeration Text="Green " Value="Green" SelectByDefault="false"/>
+                    <Enumeration Text="Orange" Value="Orange" SelectByDefault="true"/>
+                </Restriction>
+            </ClaimType>
+            <ClaimType Id="CheckboxMultiSelectType">
+                <DisplayName>CheckboxMultiSelect type</DisplayName>
+                <DataType>string</DataType>
+                <UserInputType>CheckboxMultiSelect</UserInputType>
+                <Restriction>
+                    <Enumeration Text="English" Value="English" SelectByDefault="true"/>
+                    <Enumeration Text="France " Value="France" SelectByDefault="false"/>
+                    <Enumeration Text="Spanish" Value="Spanish" SelectByDefault="false"/>
+                </Restriction>
+            </ClaimType>
+            <ClaimType Id="DateTimeDropdownType">
+                <DisplayName>DateTimeDropdown type</DisplayName>
+                <DataType>date</DataType>
+                <UserInputType>DateTimeDropdown</UserInputType>
+            </ClaimType>
+            <ClaimType Id="ReadonlyType">
+                <DisplayName>Readonly type</DisplayName>
+                <DataType>string</DataType>
+                <UserInputType>Readonly</UserInputType>
+            </ClaimType>
+        </ClaimsSchema>
+
+        <ContentDefinitions>
+            <ContentDefinition Id="api.selfasserted">
+                <LoadUri>~/tenant/templates/AzureBlue/selfAsserted.cshtml</LoadUri>
+                <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:2.1.14</DataUri>
+            </ContentDefinition>
+        </ContentDefinitions>
+    </BuildingBlocks>
+
+    <ClaimsProviders>
+        <ClaimsProvider>
+            <DisplayName>Unit tests</DisplayName>
+            <TechnicalProfiles>
+                <!--Self-asserted technical profile-->
+                <TechnicalProfile Id="ExperimentalTechnicalProfile">
+                    <DisplayName>User ID signup</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="ContentDefinitionReferenceId">api.selfasserted</Item>
+                        <Item Key="setting.showSignupLink">false</Item>
+                        <Item Key="setting.forgotPasswordLinkLocation">none</Item>
+                    </Metadata>
+                    <IncludeInSso>false</IncludeInSso>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="ParagraphType" DefaultValue="The cat is a domestic species of a small carnivorous mammal." />
+                        <InputClaim ClaimTypeReferenceId="ReadonlyType" DefaultValue="46726293" />
+                    </InputClaims>
+                    <DisplayClaims>
+                        <DisplayClaim ClaimTypeReferenceId="ParagraphType" />
+                        <DisplayClaim ClaimTypeReferenceId="ReadonlyType" />
+                        <DisplayClaim ClaimTypeReferenceId="DropdownSingleSelectType" Required="false" />
+                        <DisplayClaim ClaimTypeReferenceId="PasswordType" />
+                        <DisplayClaim ClaimTypeReferenceId="EmailBoxType" />
+                        <DisplayClaim ClaimTypeReferenceId="TextBoxType" />
+                        <DisplayClaim ClaimTypeReferenceId="CheckboxMultiSelectType" />
+                        <DisplayClaim ClaimTypeReferenceId="RadioSingleSelectType" />
+                        <DisplayClaim ClaimTypeReferenceId="DateTimeDropdownType" />
+                    </DisplayClaims>
+                    <OutputClaims>
+                        <!--Password-->
+                        <OutputClaim ClaimTypeReferenceId="PasswordType" />
+                        <!--EmailBox-->
+                        <OutputClaim ClaimTypeReferenceId="EmailBoxType" />
+                        <!--Textbox-->
+                        <OutputClaim ClaimTypeReferenceId="TextBoxType" />
+                        <!--DropdownSingleSelect-->
+                        <OutputClaim ClaimTypeReferenceId="DropdownSingleSelectType" />
+                        <!--CheckboxMultiSelect-->
+                        <OutputClaim ClaimTypeReferenceId="CheckboxMultiSelectType" />
+                        <!--RadioSingleSelect-->
+                        <OutputClaim ClaimTypeReferenceId="RadioSingleSelectType" />
+                        <!--DateTimeDropdown-->
+                        <OutputClaim ClaimTypeReferenceId="DateTimeDropdownType" />
+                        <!--Paragraph-->
+                        <OutputClaim ClaimTypeReferenceId="ParagraphType" />
+                        <!--Readonly-->
+                        <OutputClaim ClaimTypeReferenceId="ReadonlyType" />
+                    </OutputClaims>
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+    </ClaimsProviders>
+
+    <UserJourneys>
+        <UserJourney Id="UnitTestJourney">
+            <OrchestrationSteps>
+                <OrchestrationStep Order="1" Type="ClaimsExchange">
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="ExperimentalTechnicalProfile" TechnicalProfileReferenceId="ExperimentalTechnicalProfile" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+                <OrchestrationStep Order="2" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+            </OrchestrationSteps>
+        </UserJourney>
+    </UserJourneys>
+
+    <RelyingParty>
+        <DefaultUserJourney ReferenceId="UnitTestJourney" />
+        <TechnicalProfile Id="PolicyProfile">
+            <DisplayName>PolicyProfile</DisplayName>
+            <Protocol Name="OpenIdConnect" />
+            <OutputClaims>
+                <OutputClaim ClaimTypeReferenceId="objectId" PartnerClaimType="sub" DefaultValue="1234" />
+                <OutputClaim ClaimTypeReferenceId="tenantId" AlwaysUseDefaultValue="true" DefaultValue="{Policy:TenantObjectId}" />
+
+                <!-- Unit test claims-->
+                <OutputClaim ClaimTypeReferenceId="PasswordType" />
+                <OutputClaim ClaimTypeReferenceId="EmailBoxType" />
+                <OutputClaim ClaimTypeReferenceId="TextBoxType" />
+                <OutputClaim ClaimTypeReferenceId="DropdownSingleSelectType" />
+                <OutputClaim ClaimTypeReferenceId="CheckboxMultiSelectType" />
+                <OutputClaim ClaimTypeReferenceId="RadioSingleSelectType" />
+                <OutputClaim ClaimTypeReferenceId="DateTimeDropdownType" />
+                <OutputClaim ClaimTypeReferenceId="ParagraphType" />
+                <OutputClaim ClaimTypeReferenceId="ReadonlyType" DefaultValue="46726293" />
+            </OutputClaims>
+            <SubjectNamingInfo ClaimType="sub" />
+        </TechnicalProfile>
+    </RelyingParty>
+</TrustFrameworkPolicy>

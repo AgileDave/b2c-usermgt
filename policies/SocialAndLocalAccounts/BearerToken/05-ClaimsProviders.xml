@@ -34,6 +34,23 @@
                     </OutputClaims>
                     <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
                 </TechnicalProfile>
+
+
+                <TechnicalProfile Id="REST-GetProfile">
+                    <DisplayName>Get user extended profile Azure Function web hook</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="ServiceUrl">https://your-account.azurewebsites.net/api/GetProfile?code=your-code</Item>
+                        <Item Key="SendClaimsIn">Body</Item>
+                        <Item Key="AuthenticationType">Bearer</Item>
+                        <Item Key="UseClaimAsBearerToken">bearerToken</Item>
+                        <Item Key="AllowInsecureAuthInProduction">false</Item>
+                    </Metadata>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="bearerToken"/>
+                    </InputClaims>
+                </TechnicalProfile>
+
             </TechnicalProfiles>
         </ClaimsProvider>
         <ClaimsProvider>

@@ -61,8 +61,55 @@
                 <UserHelpText/>
                 <UserInputType>TextBox</UserInputType>
             </ClaimType>
+            <ClaimType Id="finalLinkUrl">
+                <DisplayName>Some Value to Enter</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText/>
+                <UserInputType>TextBox</UserInputType>
+            </ClaimType>
         </ClaimsSchema>
 
+
+        <ClaimsTransformations>
+            <ClaimsTransformation Id="SetResponseMessageForEmailAlreadyExists" TransformationMethod="FormatLocalizedString">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="mystate" />
+                </InputClaims>
+                <InputParameters>
+                    <InputParameter Id="stringFormatId" DataType="string" Value="ResponseUrl_FinalLink" />
+                </InputParameters>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="finalLinkUrl" TransformationClaimType="outputClaim" />
+                </OutputClaims>
+            </ClaimsTransformation>
+        </ClaimsTransformations>
+
+        <ContentDefinitions>
+            <ContentDefinition Id="api.selfasserted">
+                <LoadUri>~/tenant/templates/AzureBlue/selfAsserted.cshtml</LoadUri>
+                <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+                <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:2.1.14</DataUri>
+                <Metadata>
+                    <Item Key="DisplayName">Collect information from user page</Item>
+                </Metadata>
+                <LocalizedResourcesReferences MergeBehavior="Prepend">
+                    <LocalizedResourcesReference Language="en" LocalizedResourcesReferenceId="api.selfasserted.en" />
+                </LocalizedResourcesReferences>
+            </ContentDefinition>
+        </ContentDefinitions>
+
+        <Localization Enabled="true">
+            <SupportedLanguages DefaultLanguage="en" MergeBehavior="ReplaceAll">
+                <SupportedLanguage>en</SupportedLanguage>
+            </SupportedLanguages>
+            <LocalizedResources Id="api.selfasserted.en">
+                <LocalizedStrings>
+                    <LocalizedString ElementType="FormatLocalizedStringTransformationClaimType" StringId="ResponseUrl_FinalLink">http://www.example.com?state={0}</LocalizedString>
+                    <LocalizedString ElementType="UxElement" StringId="disclaimer_link_1_text">Dynamic Link</LocalizedString>
+                    <LocalizedString ElementType="UxElement" StringId="disclaimer_link_1_url">https://test.com?state={Claim:finalLinkUrl}</LocalizedString>
+                </LocalizedStrings>
+            </LocalizedResources>
+        </Localization>
 
     </BuildingBlocks>
 </TrustFrameworkPolicy>

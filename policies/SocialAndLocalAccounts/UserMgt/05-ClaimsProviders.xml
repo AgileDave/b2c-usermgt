@@ -64,6 +64,16 @@
                     </OutputClaims>
                 </TechnicalProfile>
 
+                <!-- <TechnicalProfile Id="SelfAsserted-LocalAccountSignin-Email">
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="roles" PartnerClaimType="roles" />
+                    </OutputClaims>
+                    <ValidationTechnicalProfiles>
+                        <ValidationTechnicalProfile ReferenceId="REST-GetUserRoles" ContinueOnError="true">
+                        </ValidationTechnicalProfile>
+                    </ValidationTechnicalProfiles>
+                </TechnicalProfile> -->
+
             </TechnicalProfiles>
         </ClaimsProvider>
 
